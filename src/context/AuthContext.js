@@ -16,6 +16,7 @@ const initialAuthState = {
   user: safeParse('user'),
   parentOrg: safeParse('parentOrg'),
   currentOrg: safeParse('currentOrg'),
+  authOverride: false
 };
 
 const authActionTypes = {
