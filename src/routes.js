@@ -60,6 +60,7 @@ const routes = [
         key: "analytics",
         route: "/dashboards/analytics",
         component: <Analytics />,
+        protected: true,
       },
 
     ],
@@ -76,12 +77,14 @@ const routes = [
             key: "profile-overview",
             route: "/pages/crm/clients",
             component: <ClientsData />,
+            protected: true,
           },
       {
         name: "Organizations",
         key: "organizations",
         route: "/pages/crm/organizations",
         component:<OrganizationsData/>,
+        protected: true,
         },
     ],
   },
@@ -323,12 +326,14 @@ const routes = [
             key: "notification-settings",
             route: "/notification-settings",
             component: <NotificationSettings />,
+            protected: true,
         },
         {
             name: "Calendar Profile",
             key: "calendar-profile",
             route: "/user-profile",
             component: <UserProfile />,
+            protected: true,
         }
          ],
   },
@@ -349,30 +354,34 @@ const routes = [
     name: "Settings",
     key: "settings",
     icon: <Icon fontSize="medium">view_in_ar</Icon>,
-
+    protected: true,
     collapse: [
           {
             name: "Users",
             key: "users",
             route: "/settings/users/app-user",
             component: <ApplicationUsersPage />,
+            protected: true,
           },
           {
             name: "Roles",
             key: "roles",
             route: "/settings/roles/app-role",
             component: <AppRoles />,
+            protected: true,
           },
           {
         name: "Security",
         key: "security",
         href: "/settings/security",
+        protected: true,
       },
       {
         name: "Integrations",
         key: "integrations",
         route: "/settings/integrations",
         component: <IntegrationPage />,
+        protected: true,
       },
                   {
             name: "Integrations",
@@ -386,6 +395,7 @@ const routes = [
             key: "subscriptions",
             route: "/settings/subscriptions",
             component: <SubscriptionPage />,
+            protected: true,
           },
     ],
   },
