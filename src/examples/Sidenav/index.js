@@ -46,9 +46,6 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 
-
-
-
   useEffect(() => {
     function handleMiniSidenav() {
       setMiniSidenav(dispatch, window.innerWidth < 1200);
@@ -76,7 +73,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     </NavLink>
   ));
 
-  const renderCollapse = (collapses) => collapses.map(({ name, collapse, route, href, key }) => {
+  const renderCollapse = (collapses) => collapses.map(({ name, collapse, route, href, key, hidden }) => {
     let returnValue;
     if (collapse) {
       returnValue = (
@@ -92,7 +89,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
               : setOpenNestedCollapse(key)
           }
         >
-          {renderNestedCollapse(collapse)}
+          {renderNestedCollapse(collapse.filter(f => !f.hidden))}
         </SidenavItem>
       );
     } else {
@@ -106,11 +103,11 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         >
           <SidenavItem color={color} name={name} active={key === itemName} />
         </Link>
-      ) : (
+      ) : !hidden ? (
         <NavLink to={route} key={key} sx={{ textDecoration: "none" }}>
           <SidenavItem color={color} name={name} active={key === itemName} />
         </NavLink>
-      );
+      ) : <></>;
     }
     return <SidenavList key={key}>{returnValue}</SidenavList>;
   });

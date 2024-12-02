@@ -162,7 +162,7 @@ const routes = [
         key: "Project Detail",
         route: "/projects/:projectId",
         component: <ProjectEditor />,
-        protected: false,
+        protected: true,
         hidden: true,
       },
       {
