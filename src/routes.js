@@ -8,6 +8,7 @@ import TemplateBuilder from "layouts/pages/projects/templatebuilder";
 import ClientsData from "./layouts/pages/crm/clients";
 import ApplicationUsersPage from "./layouts/pages/settings/users/app-user";
 import AppRoles from "./layouts/pages/settings/roles/app-role";
+import DetailsPage from "layouts/pages/projects/projectmanagement/components/DetailsPage";
 import { useAuth } from 'context/AuthContext';
 
 // Material Dashboard 2 PRO React components
@@ -21,6 +22,8 @@ import profilePicture from "assets/images/team-3.jpg";
 import Basic from "./layouts/authentication/sign-in/basic";
 import React from "react";
 import OrganizationsData from "./layouts/pages/crm/organizations";
+
+//pages
 import FormBuilder from "./layouts/pages/formbuilder";
 import FormListPage from "./layouts/pages/formbuilder";
 import IntegrationPage from "./layouts/pages/settings/integrations";
@@ -28,10 +31,12 @@ import DashboardLayout from "./layouts/pages/calendarbooking/CalendarDashboard";
 import BookingLinkManager from "./layouts/pages/calendarbooking/BookingLinkManager";
 import MeetingManagement from "./layouts/pages/calendarbooking/MeetingManagement";
 import BookingPage from "./layouts/pages/calendarbooking/BookingPage";
+import CalendarBooking from "layouts/pages/booking/CalendarBooking";
 import BrandingSettings from "./layouts/pages/calendarbooking/BrandingSettings";
 import NotificationSettings from "./layouts/pages/calendarbooking/NotificationSettings";
 import UserProfile from "./layouts/pages/calendarbooking/UserProfile";
 import SubscriptionPage from "./layouts/pages/settings/subscriptions";
+import ProjectEditor from "layouts/pages/projects/components/ProjectEditor";
 
 // Attempt to retrieve the user object from localStorage
 const userString = localStorage.getItem('user');
@@ -44,7 +49,6 @@ const userName = userObject ? userObject.name : 'Guest';
 
 
 const routes = [
-
   {
     type: "collapse",
     name: "Dashboards",
@@ -154,6 +158,14 @@ const routes = [
             protected: true,
       },
       {
+        name: "Project Detail",
+        key: "Project Detail",
+        route: "/projects/:projectId",
+        component: <ProjectEditor />,
+        protected: false,
+        hidden: true,
+      },
+      {
             name: "Project Management",
             key: "Project Management",
             route: "/projectmanagement",
@@ -167,7 +179,22 @@ const routes = [
         component: <TemplateBuilder/>,
         protected: true,
       },
-
+      {
+        name: "Edit Checklist",
+        key: "Edit Checklist",
+        route: "/checklists/:itemType/:itemId",
+        component: <TemplateBuilder/>,
+        protected: true,
+        hidden: true
+      },
+      {
+        name: "Edit Item",
+        key: "Edit Item",
+        route: "/edit/:itemType/:itemId",
+        component: <DetailsPage />,
+        protected: true,
+        hidden: true
+      },
     ],
   },
 
@@ -223,7 +250,21 @@ const routes = [
             component: <FormListPage/>,
             protected: true,
       },
-
+      {
+        name: "Formbuilder",
+        key: "Formbuilder",
+        route: "/formbuilder",
+        component: <FormBuilder />,
+        protected: true,
+      },
+      {
+        name: "Formbuilder Detail",
+        key: "Formbuilder Detail",
+        route: "/formbuilder/:id",
+        component: <FormBuilder />,
+        protected: true,
+        hidden: true
+      },
     ],
   },
 
@@ -247,6 +288,14 @@ const routes = [
     key: "booking",
     icon: <Icon fontSize="medium">view_in_ar</Icon>,
     collapse: [
+      {
+            name: "Booking",
+            key: "booking detail",
+            route: "/booking/:uuid",
+            component: <CalendarBooking />,
+            protected: true,
+            hidden: true
+      },
       {
             name: "Calendar Booking",
             key: "booking",
@@ -319,11 +368,18 @@ const routes = [
         key: "security",
         href: "/settings/security",
       },
+      {
+        name: "Integrations",
+        key: "integrations",
+        route: "/settings/integrations",
+        component: <IntegrationPage />,
+      },
                   {
             name: "Integrations",
             key: "integrations",
-            route: "/settings/integrations",
+            route: "/integrations",
             component: <IntegrationPage />,
+            protected: true
           },
         {
             name: "Subscriptions",

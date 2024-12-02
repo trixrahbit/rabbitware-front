@@ -153,18 +153,7 @@ export default function App() {
           <Routes>
             {getRoutes([...routes, ...pageRoutes])}
             <Route path="/login" element={<Basic />} />
-            <Route path="/pages/profile/profile-settings" element={<ProfileSettingsPage />} />
-            <Route path="/projects/:projectId" element={<ProjectEditor />} />
-            <Route path="/edit/:itemType/:itemId" element={<DetailsPage />} />
-            <Route path="/checklists/:itemType/:itemId" element={<ChecklistViewer />} />
-            <Route path="/" element={<FormListPage />} />
-            <Route path="/formbuilder" element={<FormBuilder />} />
-            <Route path="/formbuilder/:id" element={<FormBuilder />} />
-            <Route path="/integrations" element={<IntegrationPage />} />
-
-            {/* Booking route without the global layout */}
-            <Route path="/booking/:uuid" element={<CalendarBooking />} />
-
+            <Route path="/" element={isAuthenticated ? <FormListPage /> : <Navigate to={"/login"} replace />} />
             <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard/analytics" : "/login"} replace />} />
           </Routes>
           {layout === "dashboard" && !pathname.startsWith("/booking") && configsButton}
