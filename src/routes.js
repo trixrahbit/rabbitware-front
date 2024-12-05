@@ -74,7 +74,7 @@ const routes = [
     collapse: [
           {
             name: "Client Overview",
-            key: "profile-overview",
+            key: "Client Overview",
             route: "/pages/crm/clients",
             component: <ClientsData />,
             protected: true,
@@ -88,45 +88,45 @@ const routes = [
         },
     ],
   },
-  { type: "divider", key: "divider-1" },
-  { type: "title", title: "Sales", key: "sales" },
-         {
-    type: "collapse",
-    name: "Sales",
-    key: "saleslink",
-    icon: <Icon fontSize="medium">upcoming</Icon>,
-    collapse: [
-      {
-        name: "Sales Reps",
-        key: "getting-started",
-        collapse: [
-          {
-            name: "Territories",
-            key: "overview",
-            href: "https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/",
-          },
-        ],
-      },
-    ],
-  },
-         {
-    type: "collapse",
-    name: "Sales Stuff",
-    key: "sales-stuff",
-    icon: <Icon fontSize="medium">view_in_ar</Icon>,
-    collapse: [
-      {
-        name: "Sales",
-        key: "alerts",
-        href: "https://www.creative-tim.com/learning-lab/react/alerts/material-dashboard/",
-      },
-      {
-        name: "Sales",
-        key: "avatar",
-        href: "https://www.creative-tim.com/learning-lab/react/avatar/material-dashboard/",
-      },
-    ],
-  },
+  // { type: "divider", key: "divider-1" },
+  // { type: "title", title: "Sales", key: "sales" },
+  //        {
+  //   type: "collapse",
+  //   name: "Sales",
+  //   key: "saleslink",
+  //   icon: <Icon fontSize="medium">upcoming</Icon>,
+  //   collapse: [
+  //     {
+  //       name: "Sales Reps",
+  //       key: "getting-started",
+  //       collapse: [
+  //         {
+  //           name: "Territories",
+  //           key: "overview",
+  //           href: "https://www.creative-tim.com/learning-lab/react/overview/material-dashboard/",
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
+  //        {
+  //   type: "collapse",
+  //   name: "Sales Stuff",
+  //   key: "sales-stuff",
+  //   icon: <Icon fontSize="medium">view_in_ar</Icon>,
+  //   collapse: [
+  //     {
+  //       name: "Sales",
+  //       key: "alerts",
+  //       href: "https://www.creative-tim.com/learning-lab/react/alerts/material-dashboard/",
+  //     },
+  //     {
+  //       name: "Sales",
+  //       key: "avatar",
+  //       href: "https://www.creative-tim.com/learning-lab/react/avatar/material-dashboard/",
+  //     },
+  //   ],
+  // },
    { type: "divider", key: "divider-2" },
   { type: "title", title: "Service", key: "service" },
     {
@@ -270,7 +270,6 @@ const routes = [
       },
     ],
   },
-
   {
     type: "collapse",
     name: "Analytics",
@@ -279,12 +278,13 @@ const routes = [
     collapse: [
          {
         name: "Analytics",
-        key: "alerts",
-        href: "https://www.creative-tim.com/learning-lab/react/alerts/material-dashboard/",
+        key: "Analytics",
+        route: "/analytics",
+        component: <Analytics />,
+        protected: true
       },
     ],
   },
-
       {
     type: "collapse",
     name: "Calendar Booking",
@@ -337,16 +337,7 @@ const routes = [
         }
          ],
   },
-
-
-  { type: "divider", key: "divider-5" },
-
-
-
-
-
-
-
+{ type: "divider", key: "divider-5" },
 { type: "title", title: "Settings", key: "settings-title" },
 
   {
@@ -370,19 +361,19 @@ const routes = [
             component: <AppRoles />,
             protected: true,
           },
-          {
-        name: "Security",
-        key: "security",
-        href: "/settings/security",
-        protected: true,
-      },
-      {
-        name: "Integrations",
-        key: "integrations",
-        route: "/settings/integrations",
-        component: <IntegrationPage />,
-        protected: true,
-      },
+      //     {
+      //   name: "Security",
+      //   key: "security",
+      //   href: "/settings/security",
+      //   protected: true,
+      // },
+      // {
+      //   name: "Integrations",
+      //   key: "integrations",
+      //   route: "/settings/integrations",
+      //   component: <IntegrationPage />,
+      //   protected: true,
+      // },
                   {
             name: "Integrations",
             key: "integrations",

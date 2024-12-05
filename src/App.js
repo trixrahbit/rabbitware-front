@@ -154,7 +154,7 @@ export default function App() {
             {getRoutes([...routes, ...pageRoutes])}
             <Route path="/login" element={<Basic />} />
             <Route path="/" element={isAuthenticated || authOverride ? <FormListPage /> : <Navigate to={"/login"} replace />} />
-            <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboard/analytics" : "/login"} replace />} />
+            <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
           </Routes>
           {layout === "dashboard" && !pathname.startsWith("/booking") && configsButton}
         </ThemeProvider>
