@@ -24,7 +24,7 @@ const EditStory = ({ open, onClose, storyId }) => {
 
   const fetchStoryData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/template/stories/${id}`);
+      const response = await axios.get(`https://app.webitservices.com/template/stories/${id}`);
       const story = response.data;
       setName(story.name);
       setDescription(story.description);
@@ -45,7 +45,7 @@ const EditStory = ({ open, onClose, storyId }) => {
         end_date: endDate,
         budget_hours: budgetHours,
       };
-      await axios.put(`http://localhost:8000/template/stories/${storyId}`, updatedStory);
+      await axios.put(`https://app.webitservices.com/template/stories/${storyId}`, updatedStory);
       onClose();
     } catch (error) {
       console.error("Error saving story:", error);

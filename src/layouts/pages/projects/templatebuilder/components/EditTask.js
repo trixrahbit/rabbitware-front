@@ -24,7 +24,7 @@ const EditTask = ({ open, onClose, taskId }) => {
 
   const fetchTaskData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/template/tasks/${id}`);
+      const response = await axios.get(`https://app.webitservices.com/template/tasks/${id}`);
       const task = response.data;
       setName(task.name);
       setDescription(task.description);
@@ -45,7 +45,7 @@ const EditTask = ({ open, onClose, taskId }) => {
         end_date: endDate,
         budget_hours: budgetHours,
       };
-      await axios.put(`http://localhost:8000/template/tasks/${taskId}`, updatedTask);
+      await axios.put(`https://app.webitservices.com/template/tasks/${taskId}`, updatedTask);
       onClose();
     } catch (error) {
       console.error("Error saving task:", error);

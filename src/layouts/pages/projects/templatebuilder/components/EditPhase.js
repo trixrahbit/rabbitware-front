@@ -23,7 +23,7 @@ const EditPhase = ({ open, onClose, phaseId }) => {
 
   const fetchPhaseData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/template/phases/${id}`);
+      const response = await axios.get(`https://app.webitservices.com/template/phases/${id}`);
       const phase = response.data;
       setName(phase.name);
       setStartDate(formatDate(phase.start_date));
@@ -50,7 +50,7 @@ const EditPhase = ({ open, onClose, phaseId }) => {
         end_date: endDate,
         budget_hours: budgetHours,
       };
-      await axios.put(`http://localhost:8000/template/phases/${phaseId}`, updatedPhase);
+      await axios.put(`https://app.webitservices.com/template/phases/${phaseId}`, updatedPhase);
       onClose();
     } catch (error) {
       console.error("Error saving phase:", error);

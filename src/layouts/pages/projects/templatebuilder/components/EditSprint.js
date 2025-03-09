@@ -23,7 +23,7 @@ const EditSprint = ({ open, onClose, sprintId }) => {
 
   const fetchSprintData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/template/sprints/${id}`);
+      const response = await axios.get(`https://app.webitservices.com/template/sprints/${id}`);
       const sprint = response.data;
       setName(sprint.name);
       setStartDate(sprint.start_date);
@@ -42,7 +42,7 @@ const EditSprint = ({ open, onClose, sprintId }) => {
         end_date: endDate,
         budget_hours: budgetHours,
       };
-      await axios.put(`http://localhost:8000/template/sprints/${sprintId}`, updatedSprint);
+      await axios.put(`https://app.webitservices.com/template/sprints/${sprintId}`, updatedSprint);
       onClose();
     } catch (error) {
       console.error("Error saving sprint:", error);
