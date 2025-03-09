@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DataTable from "examples/Tables/DataTable";
-import TicketDetailsModal from "./TicketDetailsModal"; // Import the modal component
+import TicketDetailsModal from "./TicketDetailsModal";
 
 const ticketColumns = [
   { Header: "ID", accessor: "id", width: "10%" },
@@ -21,15 +21,15 @@ const TicketData = () => {
     axios.get("https://app.webitservices.com/api/tickets")
       .then(response => {
         console.log("Tickets API Response:", response.data);
-        const formattedTickets = response.data.map(ticket => ({
+        setTickets(response.data.map(ticket => ({
           id: ticket.id || "N/A",
           title: ticket.title || "No Title",
           status: ticket.status || "Unknown",
           priority: ticket.priority || "Unassigned",
           impact: ticket.impact || "Unspecified",
           description: ticket.description || "No Description Available",
-        }));
-        setTickets(formattedTickets);
+          onClick: () => handleRowClick(ticket), // 🟢 Correctly passing onClick event
+        })));
       })
       .catch(error => console.error("Error fetching tickets:", error));
   }, []);
@@ -49,17 +49,12 @@ const TicketData = () => {
       <DataTable
         table={{
           columns: ticketColumns,
-          rows: tickets.map(ticket => ({
-            ...ticket,
-            onClick: () => handleRowClick(ticket),
-          })),
+          rows: tickets,
         }}
       />
 
       {/* Ticket Details Modal */}
-      {selectedTicket && (
-        <TicketDetailsModal ticket={selectedTicket} open={isModalOpen} onClose={handleCloseModal} />
-      )}
+      <TicketDetailsModal ticket={selectedTicket} open={isModalOpen} onClose={handleCloseModal} />
     </>
   );
 };
