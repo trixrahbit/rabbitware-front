@@ -49,7 +49,7 @@ const BrandingSettings = () => {
 
     try {
       // Update logo URL in the backend
-      await axios.put(`http://localhost:8000/clients/${client_id}/branding-settings`, {
+      await axios.put(`https://app.webitservices.com/api/clients/${client_id}/branding-settings`, {
         logoUrl,
       }, {
         headers: { Authorization: `Bearer ${authToken}` },
@@ -64,7 +64,7 @@ const BrandingSettings = () => {
   const handleColorChange = async () => {
     try {
       // Update brand color in the backend
-      await axios.put(`http://localhost:8000/clients/${client_id}/branding-settings`, {
+      await axios.put(`https://app.webitservices.com/api/clients/${client_id}/branding-settings`, {
         brandColor,
       }, {
         headers: { Authorization: `Bearer ${authToken}` },

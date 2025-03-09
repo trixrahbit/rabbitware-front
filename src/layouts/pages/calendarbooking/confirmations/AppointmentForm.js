@@ -57,7 +57,7 @@ const handleModalSave = async () => {
     console.log('Payload being sent:', payload);
 
     try {
-        const response = await axios.post('http://localhost:8000/bookmeeting', payload);
+        const response = await axios.post('https://app.webitservices.com/api/bookmeeting', payload);
 
     } catch (error) {
         console.error('Error booking meeting:', error); }

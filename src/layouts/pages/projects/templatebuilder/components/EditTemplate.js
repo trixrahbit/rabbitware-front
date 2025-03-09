@@ -138,7 +138,7 @@ const EditTemplate = ({ open, onClose, templateId }) => {
 
   const fetchTemplateData = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/templates/${id}`);
+      const response = await axios.get(`https://app.webitservices.com/api/templates/${id}`);
       const template = response.data;
       setName(template.name);
       setDescription(template.description);
@@ -182,7 +182,7 @@ const EditTemplate = ({ open, onClose, templateId }) => {
         stories,
       };
       console.log("Sending updated template data:", updatedTemplate); // Log the payload
-      await axios.put(`http://localhost:8000/templates/${templateId}`, updatedTemplate);
+      await axios.put(`https://app.webitservices.com/api/templates/${templateId}`, updatedTemplate);
       onClose();
     } catch (error) {
       console.error("Error saving template:", error);
@@ -192,16 +192,16 @@ const EditTemplate = ({ open, onClose, templateId }) => {
 const handleAddItem = async () => {
   let endpoint = "";
   if (newItem.type === "phase") {
-    endpoint = "http://localhost:8000/template/phases";
+    endpoint = "https://app.webitservices.com/api/template/phases";
     setPhases([...phases, newItem]);
   } else if (newItem.type === "task") {
-    endpoint = "http://localhost:8000/template/tasks";
+    endpoint = "https://app.webitservices.com/api/template/tasks";
     setTasks([...tasks, newItem]);
   } else if (newItem.type === "sprint") {
-    endpoint = "http://localhost:8000/template/sprints";
+    endpoint = "https://app.webitservices.com/api/template/sprints";
     setSprints([...sprints, newItem]);
   } else if (newItem.type === "story") {
-    endpoint = "http://localhost:8000/template/stories";
+    endpoint = "https://app.webitservices.com/api/template/stories";
     setStories([...stories, newItem]);
   }
 

@@ -29,7 +29,7 @@ const ChecklistCreator = () => {
     try {
       const itemType = window.location.pathname.includes("story") ? "story_id" : "task_id";
 
-      const response = await axios.post('http://localhost:8000/checklists/', {
+      const response = await axios.post('https://app.webitservices.com/api/checklists/', {
         [itemType]: itemId,
         items: checklistItems.map(item => ({ description: item.title })),
       });

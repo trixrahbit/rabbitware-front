@@ -18,7 +18,7 @@ const useUserInfo = () => {
         const userId = user?.id; // Adjust according to your user object structure
         const orgId = currentOrg?.id; // Adjust according to your organization object structure
 
-        const response = await axios.get(`http://localhost:8000/organizations/${orgId}/users/${userId}/profile`, {
+        const response = await axios.get(`https://app.webitservices.com/api/organizations/${orgId}/users/${userId}/profile`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setUserInfo(response.data);

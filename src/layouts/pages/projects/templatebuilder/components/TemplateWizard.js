@@ -134,7 +134,7 @@ const handleNext = async () => {
   if (activeStep === 0) {
     // Save the template and get the template ID
     try {
-      const response = await axios.post("http://localhost:8000/templates", {
+      const response = await axios.post("https://app.webitservices.com/api/templates", {
         name,
         description,
         methodology,
@@ -161,16 +161,16 @@ const handleNext = async () => {
   const handleAddItem = async () => {
     let endpoint = "";
     if (newItem.type === "phase") {
-      endpoint = "http://localhost:8000/template/phases";
+      endpoint = "https://app.webitservices.com/api/template/phases";
       setPhases([...phases, newItem]);
     } else if (newItem.type === "task") {
-      endpoint = "http://localhost:8000/template/tasks";
+      endpoint = "https://app.webitservices.com/api/template/tasks";
       setTasks([...tasks, newItem]);
     } else if (newItem.type === "sprint") {
-      endpoint = "http://localhost:8000/template/sprints";
+      endpoint = "https://app.webitservices.com/api/template/sprints";
       setSprints([...sprints, newItem]);
     } else if (newItem.type === "story") {
-      endpoint = "http://localhost:8000/template/stories";
+      endpoint = "https://app.webitservices.com/api/template/stories";
       setStories([...stories, newItem]);
     }
 
