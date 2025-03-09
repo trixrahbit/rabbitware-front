@@ -1,65 +1,45 @@
 import React from "react";
-import { Modal, Paper, Typography, IconButton, Backdrop, Fade } from "@mui/material";
+import Draggable from "react-draggable";
+import { Modal, Paper, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MDBox from "components/MDBox";
 
 const TicketDetailsModal = ({ ticket, open, onClose }) => {
-  if (!ticket) return null; // Ensure modal doesn't render when there's no ticket
-
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      closeAfterTransition
-      BackdropComponent={Backdrop}
-      BackdropProps={{ timeout: 500 }}
-      disableEnforceFocus // 🔥 Prevents focus trap issues in MUI
-      disableAutoFocus // 🔥 Ensures Modal doesn't auto-focus incorrectly
-    >
-      <Fade in={open}>
-        <MDBox
-          sx={{
+    <Modal open={open} onClose={onClose} aria-labelledby="ticket-modal">
+      <Draggable>
+        <Paper
+          style={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "50%",
-            p: 3,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            borderRadius: "10px",
+            padding: "20px",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
           }}
         >
-          {/* Modal Header */}
-          <MDBox
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ borderBottom: "1px solid #ddd", pb: 1, mb: 2 }}
-          >
-            <Typography variant="h6">
-              {ticket.title || "No Title"}
-            </Typography>
+          <MDBox display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h5">{ticket.title}</Typography>
             <IconButton onClick={onClose}>
               <CloseIcon />
             </IconButton>
           </MDBox>
-
-          {/* Ticket Details */}
-          <Typography variant="body1">
-            <strong>Status:</strong> {ticket.status || "Unknown"}
+          <Typography variant="subtitle1" color="textSecondary">
+            Status: {ticket.status}
           </Typography>
-          <Typography variant="body1">
-            <strong>Priority:</strong> {ticket.priority || "Unassigned"}
+          <Typography variant="subtitle1" color="textSecondary">
+            Priority: {ticket.priority}
           </Typography>
-          <Typography variant="body1">
-            <strong>Impact:</strong> {ticket.impact || "Unspecified"}
+          <Typography variant="subtitle1" color="textSecondary">
+            Impact: {ticket.impact}
           </Typography>
-          <Typography variant="body2" mt={2}>
-            {ticket.description || "No Description Available"}
+          <Typography variant="body1" mt={2}>
+            {ticket.description}
           </Typography>
-        </MDBox>
-      </Fade>
+        </Paper>
+      </Draggable>
     </Modal>
   );
 };
