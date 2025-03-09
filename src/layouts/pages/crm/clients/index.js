@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-
-// Material Dashboard 2 PRO React components and layout
 import DashboardLayout from "../../../../examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "../../../../examples/Navbars/DashboardNavbar";
 import Footer from "../../../../examples/Footer";
