@@ -3,7 +3,7 @@ import axios from "axios";
 import { Button, Checkbox, IconButton, Tooltip, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MergeIcon from "@mui/icons-material/CallMerge";
-import AddIcon from "@mui/icons-material/Add";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DataTable from "examples/Tables/DataTable";
 import MDTypography from "components/MDTypography";
 
@@ -15,15 +15,11 @@ const ticketColumns = [
     width: "5%",
     Cell: ({ row }) => <Checkbox checked={row.original.selected} onChange={() => row.original.toggleSelect()} />,
   },
-  {
-    Header: "ID",
-    accessor: "id",
-    width: "10%",
-  },
+  { Header: "ID", accessor: "id", width: "10%" },
   {
     Header: "Title",
     accessor: "title",
-    width: "20%",
+    width: "25%",
     Cell: ({ row }) => (
       <MDTypography
         variant="button"
@@ -49,7 +45,6 @@ const TicketData = ({ onTicketClick }) => {
   useEffect(() => {
     axios.get("https://app.webitservices.com/api/tickets")
       .then(response => {
-        console.log("Tickets API Response:", response.data);
         const formattedTickets = response.data.map(ticket => ({
           ...ticket,
           selected: false,
@@ -71,34 +66,23 @@ const TicketData = ({ onTicketClick }) => {
     });
   };
 
-  const handleDelete = () => {
-    console.log("Deleting tickets:", selectedTickets);
-    setTickets(prevTickets => prevTickets.filter(ticket => !selectedTickets.includes(ticket.id)));
-    setSelectedTickets([]);
-  };
-
-  const handleMerge = () => {
-    console.log("Merging tickets:", selectedTickets);
-    alert("Merge functionality coming soon!");
-  };
-
   return (
     <Box>
       {/* Actions Bar */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />}>
-          New Ticket
+        <Button variant="contained" color="success" startIcon={<AddCircleOutlineIcon />}>
+          Create Ticket
         </Button>
 
         {selectedTickets.length > 0 && (
           <Box>
             <Tooltip title="Delete Selected">
-              <IconButton color="error" onClick={handleDelete}>
+              <IconButton color="error">
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Merge Selected">
-              <IconButton color="primary" onClick={handleMerge}>
+              <IconButton color="primary">
                 <MergeIcon />
               </IconButton>
             </Tooltip>
