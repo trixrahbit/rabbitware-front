@@ -22,8 +22,13 @@ const TicketData = () => {
       .then(response => {
         console.log("Tickets API Response:", response.data);
         setTickets(response.data.map(ticket => ({
-          ...ticket, // ✅ Ensures we keep all existing properties
-          onClick: () => handleRowClick(ticket), // ✅ Attaching click event
+          id: ticket.id || "N/A",
+          title: ticket.title || "No Title",
+          status: ticket.status || "Unknown",
+          priority: ticket.priority || "Unassigned",
+          impact: ticket.impact || "Unspecified",
+          description: ticket.description || "No Description Available",
+          onClick: () => handleRowClick(ticket), // 🟢 Correctly passing onClick event
         })));
       })
       .catch(error => console.error("Error fetching tickets:", error));
