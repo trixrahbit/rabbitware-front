@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import DataTable from "../../../../../examples/Tables/DataTable"; // Adjust import path as necessary
-import { useAuth } from "../../../../../context/AuthContext"; // Adjust import path as necessary
+import DataTable from "../../../../../examples/Tables/DataTable";
+import { useAuth } from "../../../../../context/AuthContext";
 import MDBox from "../../../../../components/MDBox";
 import MDButton from "../../../../../components/MDButton";
-import AddClientModal from "./AddClientModal"; // Assuming you have this component
-import { Link } from "react-router-dom";
+import AddClientModal from "./AddClientModal";
 import { IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ClientDetailsModal from "./ClientDetailModal";
-import { useClients } from "../../../../../context/ClientsContext"; // Adjust import path as necessary
-import axios from "axios"; // Adjust import path as necessary
+import { useClients } from "../../../../../context/ClientsContext";
+import axios from "axios";
 
 // Define columns for the clients table
 const clientColumns = [
@@ -18,12 +17,13 @@ const clientColumns = [
   { Header: "Phone", accessor: "phone", width: "30%" },
 ];
 
-const ClientsData = () => {
+const ClientsData = ({ searchQuery }) => {
   const { clients, setClients, fetchClients } = useClients();
   const { authToken, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
@@ -33,7 +33,6 @@ const ClientsData = () => {
   };
 
   const handleCloseDetailsModal = () => {
-    console.log('Closing modal');
     setDetailsModalOpen(false);
     setSelectedClient(null);
   };
@@ -44,7 +43,6 @@ const ClientsData = () => {
       await axios.post("https://app.webitservices.com/api/clients", completeClientData, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      // Fetch clients again to update the state
       fetchClients();
       handleCloseModal();
     } catch (error) {
@@ -52,27 +50,27 @@ const ClientsData = () => {
     }
   };
 
+  // Filter clients based on search query
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <MDBox position="relative">
-      <Tooltip title="Add Client" placement="right">
-        <IconButton
-          onClick={handleOpenModal}
-          color="primary"
-          sx={{
-            position: 'absolute',
-            right: 0,
-            top: -45,
-            backgroundColor: "info.main",
-            '&:hover': { backgroundColor: "info.dark" },
-          }}
-        >
-          <AddIcon />
-        </IconButton>
-      </Tooltip>
+      <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <MDTypography variant="h5" fontWeight="bold">
+          Client List
+        </MDTypography>
+        <Tooltip title="Add Client">
+          <MDButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
+            Add Client
+          </MDButton>
+        </Tooltip>
+      </MDBox>
       <DataTable
         table={{
           columns: clientColumns,
-          rows: clients.map(client => ({
+          rows: filteredClients.map(client => ({
             ...client,
             name: (
               <button
@@ -85,16 +83,8 @@ const ClientsData = () => {
           })),
         }}
       />
-      {isModalOpen && (
-        <AddClientModal open={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} />
-      )}
-      {detailsModalOpen && selectedClient && (
-        <ClientDetailsModal
-          open={detailsModalOpen}
-          onClose={handleCloseDetailsModal}
-          client={selectedClient}
-        />
-      )}
+      {isModalOpen && <AddClientModal open={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} />}
+      {detailsModalOpen && selectedClient && <ClientDetailsModal open={detailsModalOpen} onClose={handleCloseDetailsModal} client={selectedClient} />}
     </MDBox>
   );
 };
