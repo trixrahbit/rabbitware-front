@@ -7,7 +7,7 @@ import Footer from "../../../../examples/Footer";
 import MDBox from "../../../../components/MDBox";
 import MDTypography from "../../../../components/MDTypography";
 import MDButton from "../../../../components/MDButton";
-import { TextField, InputAdornment, Card, CardContent, Grid } from "@mui/material";
+import { TextField, InputAdornment, Card, CardContent, Grid, Tooltip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClientsData from "./components/clientsdata";
@@ -76,11 +76,12 @@ const ClientsPage = () => {
             Overview and management of your client data.
           </MDTypography>
 
-          <Card sx={{ p: 2, boxShadow: 3, borderRadius: "12px" }}>
+          {/* Search & Filter Card */}
+          <Card sx={{ p: 2, boxShadow: 4, borderRadius: "12px", backgroundColor: "white", mb: 3 }}>
             <CardContent>
-              <Grid container spacing={2} alignItems="center">
+              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
                 {/* Search Field */}
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={8}>
                   <TextField
                     fullWidth
                     label="Search Clients"
@@ -94,29 +95,39 @@ const ClientsPage = () => {
                         </InputAdornment>
                       ),
                     }}
+                    sx={{
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: "8px",
+                      "&:hover": { backgroundColor: "#eeeeee" },
+                    }}
                   />
                 </Grid>
 
                 {/* Filter Button */}
                 <Grid item xs={12} md={3}>
-                  <MDBox textAlign="right">
-                    <MDBox component="span" sx={{ display: "inline-flex", gap: 1 }}>
-                      <MDBox component="span">
-                        <MDButton variant="outlined" color="primary" startIcon={<FilterListIcon />}>
-                          Filter
-                        </MDButton>
-                      </MDBox>
-                    </MDBox>
-                  </MDBox>
+                  <Tooltip title="Filter Clients">
+                    <MDButton
+                      variant="contained"
+                      color="primary"
+                      startIcon={<FilterListIcon />}
+                      sx={{
+                        width: "100%",
+                        backgroundColor: "#3F51B5",
+                        "&:hover": { backgroundColor: "#303F9F" },
+                      }}
+                    >
+                      Filter
+                    </MDButton>
+                  </Tooltip>
                 </Grid>
               </Grid>
-
-              {/* Clients Table */}
-              <MDBox mt={3}>
-                <ClientsData searchQuery={searchQuery} />
-              </MDBox>
             </CardContent>
           </Card>
+
+          {/* Clients Table */}
+          <MDBox mt={3} p={2} boxShadow={2} borderRadius="12px" bgcolor="white">
+            <ClientsData searchQuery={searchQuery} />
+          </MDBox>
         </MDBox>
       </MDBox>
       <Footer />
