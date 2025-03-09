@@ -24,7 +24,7 @@ import React from "react";
 import OrganizationsData from "./layouts/pages/crm/organizations";
 
 //pages
-import FormBuilder from "./layouts/pages/formbuilder";
+import FormBuilder from "./layouts/pages/formbuilder/components/FormBuilder";
 import FormListPage from "./layouts/pages/formbuilder";
 import IntegrationPage from "./layouts/pages/settings/integrations";
 import DashboardLayout from "./layouts/pages/calendarbooking/CalendarDashboard";
