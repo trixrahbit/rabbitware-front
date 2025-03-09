@@ -26,7 +26,7 @@ const BrandingSettings = () => {
     // Fetch branding settings from the backend
     const fetchBrandingSettings = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/clients/${client_id}/branding-settings`, {
+        const response = await axios.get(`https://app.webitservices.com/api/clients/${client_id}/branding-settings`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setLogoUrl(response.data.logoUrl || '');

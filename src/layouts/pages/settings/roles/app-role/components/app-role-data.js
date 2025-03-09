@@ -24,7 +24,7 @@ const AppRolesData = () => {
         return;
       }
       try {
-        const response = await axios.get(`http://localhost:8000/organizations/${orgId}/roles`, {
+        const response = await axios.get(`https://app.webitservices.com/api/organizations/${orgId}/roles`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setRoles(response.data);

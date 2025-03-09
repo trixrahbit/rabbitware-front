@@ -34,7 +34,7 @@ const fetchClients = async () => {
   }
   console.log(`Fetching organizations for clientId: ${clientId} with authToken: ${authToken}`);
   try {
-    const response = await axios.get(`http://localhost:8000/${clientId}/organizations/`, {
+    const response = await axios.get(`https://app.webitservices.com/api/${clientId}/organizations/`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
     console.log(response.data); // Check the response

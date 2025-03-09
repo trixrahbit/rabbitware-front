@@ -24,13 +24,13 @@ useEffect(() => {
   const fetchBookingDetails = async () => {
     try {
       const [urlResponse, timesResponse, logoResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/users/${user.id}/booking-url`, {
+        axios.get(`https://app.webitservices.com/api/users/${user.id}/booking-url`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        axios.get(`http://localhost:8000/users/${user.id}/available-times`, {
+        axios.get(`https://app.webitservices.com/api/users/${user.id}/available-times`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        axios.get(`http://localhost:8000/users/${user.id}/branding-settings`, {
+        axios.get(`https://app.webitservices.com/api/users/${user.id}/branding-settings`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
       ]);

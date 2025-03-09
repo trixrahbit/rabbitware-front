@@ -26,7 +26,7 @@ const NotificationSettings = () => {
     // Fetch the current notification settings
     const fetchNotificationSettings = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/users/${user.id}/notification-settings`, {
+        const response = await axios.get(`https://app.webitservices.com/api/users/${user.id}/notification-settings`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         const { email, phoneNumber, emailNotifications, smsNotifications } = response.data;
@@ -45,7 +45,7 @@ const NotificationSettings = () => {
   const handleSave = async () => {
     try {
       // Update the notification settings
-      await axios.put(`http://localhost:8000/users/${user.id}/notification-settings`, {
+      await axios.put(`https://app.webitservices.com/api/users/${user.id}/notification-settings`, {
         email,
         phoneNumber,
         emailNotifications,

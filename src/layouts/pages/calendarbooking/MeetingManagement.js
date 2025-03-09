@@ -19,7 +19,7 @@ const MeetingManagement = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/users/${user.id}/calendar-events`, {
+        const response = await axios.get(`https://app.webitservices.com/api/users/${user.id}/calendar-events`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

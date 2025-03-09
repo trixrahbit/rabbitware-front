@@ -18,7 +18,7 @@ const BookingLinkManager = () => {
 
   const fetchBookingLinks = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/users/${user.id}/booking-links`, {
+      const response = await axios.get(`https://app.webitservices.com/api/users/${user.id}/booking-links`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setBookingLinks(response.data);
@@ -36,7 +36,7 @@ const BookingLinkManager = () => {
   const handleCreateNewLink = async () => {
     try {
       const newLinkData = { name: linkName, duration: parseInt(duration, 10) };
-      const response = await axios.post(`http://localhost:8000/users/${user.id}/booking-links`, newLinkData, {
+      const response = await axios.post(`https://app.webitservices.com/api/users/${user.id}/booking-links`, newLinkData, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 

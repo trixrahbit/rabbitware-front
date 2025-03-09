@@ -16,7 +16,7 @@ const TicketData = () => {
 
   useEffect(() => {
     // Fetch your tickets from the backend
-    axios.get('http://localhost:8000/tickets')
+    axios.get('https://app.webitservices.com/api/tickets')
       .then(response => {
         // Assuming the response data is the array of ticket objects
         setTickets(response.data);

@@ -14,7 +14,7 @@ const ProjectData = ({ onEdit, onDelete }) => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/projects");
+      const response = await axios.get("https://app.webitservices.com/api/projects");
       setProjects(response.data);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -23,7 +23,7 @@ const ProjectData = ({ onEdit, onDelete }) => {
 
   const handleSaveProject = async (projectData) => {
     try {
-      await axios.post("http://localhost:8000/projects", projectData);
+      await axios.post("https://app.webitservices.com/api/projects", projectData);
       fetchProjects();
     } catch (error) {
       console.error("Error saving project:", error);

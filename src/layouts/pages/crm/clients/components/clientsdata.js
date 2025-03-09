@@ -41,7 +41,7 @@ const ClientsData = () => {
   const handleSaveClient = async (clientData) => {
     const completeClientData = { ...clientData, creator_id: user?.id };
     try {
-      await axios.post("http://localhost:8000/clients", completeClientData, {
+      await axios.post("https://app.webitservices.com/api/clients", completeClientData, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       // Fetch clients again to update the state

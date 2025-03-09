@@ -36,12 +36,12 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const urlResponse = await axios.get(`http://localhost:8000/users/${user.id}/booking-url`, {
+        const urlResponse = await axios.get(`https://app.webitservices.com/api/users/${user.id}/booking-url`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setBookingUrl(urlResponse.data || '');
 
-        const hoursResponse = await axios.get(`http://localhost:8000/users/${user.id}/business-hours`, {
+        const hoursResponse = await axios.get(`https://app.webitservices.com/api/users/${user.id}/business-hours`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         if (hoursResponse.data.length > 0) {
@@ -52,18 +52,18 @@ const UserProfile = () => {
           );
         }
 
-        const timeZoneResponse = await axios.get(`http://localhost:8000/users/${user.id}/time-zone`, {
+        const timeZoneResponse = await axios.get(`https://app.webitservices.com/api/users/${user.id}/time-zone`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         const timeZoneValue = timeZoneResponse.data || '';
         setTimeZone({ value: timeZoneValue || '', label: timeZoneValue || '' });
 
-        const tokenValidationResponse = await axios.get(`http://localhost:8000/validate-outlook-token`, {
+        const tokenValidationResponse = await axios.get(`https://app.webitservices.com/api/validate-outlook-token`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setIsOutlookConnected(tokenValidationResponse.data.isValid);
 
-        const linksResponse = await axios.get(`http://localhost:8000/users/${user.id}/booking-links`, {
+        const linksResponse = await axios.get(`https://app.webitservices.com/api/users/${user.id}/booking-links`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setBookingLinks(linksResponse.data);
@@ -82,7 +82,7 @@ const UserProfile = () => {
     try {
       const payload = { booking_url: bookingUrl };
 
-      await axios.put(`http://localhost:8000/users/${user.id}/booking-url`, payload, {
+      await axios.put(`https://app.webitservices.com/api/users/${user.id}/booking-url`, payload, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
@@ -101,7 +101,7 @@ const UserProfile = () => {
         end_time: hour.end_time || ""
       }));
 
-      await axios.post(`http://localhost:8000/users/${user.id}/business-hours`, sanitizedBusinessHours, {
+      await axios.post(`https://app.webitservices.com/api/users/${user.id}/business-hours`, sanitizedBusinessHours, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
@@ -116,7 +116,7 @@ const UserProfile = () => {
     try {
       const payload = { time_zone: timeZone.value || '' };
 
-      await axios.put(`http://localhost:8000/users/${user.id}/time-zone`, payload, {
+      await axios.put(`https://app.webitservices.com/api/users/${user.id}/time-zone`, payload, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
@@ -129,7 +129,7 @@ const UserProfile = () => {
 
   const handleConnectOutlook = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/connect-to-outlook?state=${user.id}`, {
+      const response = await axios.get(`https://app.webitservices.com/api/connect-to-outlook?state=${user.id}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       const authUrl = response.data.authUrl;
@@ -146,7 +146,7 @@ const UserProfile = () => {
 
   const handleAdminConsent = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/admin-consent`, {
+      const response = await axios.get(`https://app.webitservices.com/api/admin-consent`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       const consentUrl = response.data.consentUrl;
@@ -166,7 +166,7 @@ const UserProfile = () => {
   const handleCreateNewLink = async () => {
     try {
       const newLinkData = { name: linkName, duration: parseInt(duration, 10) };
-      const response = await axios.post(`http://localhost:8000/users/${user.id}/booking-links`, newLinkData, {
+      const response = await axios.post(`https://app.webitservices.com/api/users/${user.id}/booking-links`, newLinkData, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
