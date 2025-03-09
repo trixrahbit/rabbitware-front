@@ -4,8 +4,8 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import TicketData from "./components/servicetickets/ticketdata"; // Adjust the import path as needed
-import TicketDetailsModal from "./components/servicetickets/TicketDetailsModal"; // Import the modal
+import TicketData from "./components/servicetickets/ticketdata";
+import TicketDetailsModal from "./components/servicetickets/TicketDetailsModal";
 
 const Tickets = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -25,16 +25,14 @@ const Tickets = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
-        <MDTypography variant="h4" fontWeight="medium">
-          Tickets
+        <MDTypography variant="h4" fontWeight="bold" color="textPrimary">
+          Ticket Management
         </MDTypography>
         <MDBox mt={2}>
-          {/* TicketData component now passes click handler */}
           <TicketData onTicketClick={handleTicketClick} />
         </MDBox>
       </MDBox>
 
-      {/* Render modal only if a ticket is selected */}
       {modalOpen && selectedTicket && (
         <TicketDetailsModal
           ticket={selectedTicket}
