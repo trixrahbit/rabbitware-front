@@ -45,7 +45,7 @@ const TemplateBuilderPage = () => {
 
   const handleDeleteClick = async (templateId) => {
     try {
-      await axios.delete(`https://app.webitservices.com/templates/${templateId}`);
+      await axios.delete(`https://app.webitservices.com/api/templates/${templateId}`);
       fetchData();
     } catch (error) {
       console.error('Error deleting template:', error);
@@ -54,15 +54,15 @@ const TemplateBuilderPage = () => {
 
   const fetchData = async () => {
     try {
-      const templatesResponse = await axios.get('https://app.webitservices.com/templates');
+      const templatesResponse = await axios.get('https://app.webitservices.com/api/templates');
       setTemplates(templatesResponse.data);
-      const phasesResponse = await axios.get('https://app.webitservices.com/template/phases');
+      const phasesResponse = await axios.get('https://app.webitservices.com/api/template/phases');
       setPhases(phasesResponse.data);
-      const tasksResponse = await axios.get('https://app.webitservices.com/template/tasks');
+      const tasksResponse = await axios.get('https://app.webitservices.com/api/template/tasks');
       setTasks(tasksResponse.data);
-      const sprintsResponse = await axios.get('https://app.webitservices.com/template/sprints');
+      const sprintsResponse = await axios.get('https://app.webitservices.com/api/template/sprints');
       setSprints(sprintsResponse.data);
-      const storiesResponse = await axios.get('https://app.webitservices.com/template/stories');
+      const storiesResponse = await axios.get('https://app.webitservices.com/api/template/stories');
       setStories(storiesResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
