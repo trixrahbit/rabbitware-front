@@ -142,7 +142,7 @@ export default function App() {
               <Sidenav
                 color={sidenavColor}
                 brand={transparentSidenav || whiteSidenav ? brandDark : brandWhite}
-                brandName="Rabbit PSA"
+                brandName="RabbitAI"
                 routes={routes}
                 onMouseEnter={handleOnMouseEnter}
                 onMouseLeave={handleOnMouseLeave}

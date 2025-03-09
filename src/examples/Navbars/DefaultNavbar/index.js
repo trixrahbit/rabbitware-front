@@ -571,7 +571,7 @@ function DefaultNavbar({ routes, brand, transparent, light, action }) {
 
 // Declaring default props for DefaultNavbar
 DefaultNavbar.defaultProps = {
-  brand: "Rabbit PSA",
+  brand: "RabbitAI",
   transparent: false,
   light: false,
   action: false,
