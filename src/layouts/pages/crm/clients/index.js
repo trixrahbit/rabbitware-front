@@ -6,13 +6,10 @@ import DashboardNavbar from "../../../../examples/Navbars/DashboardNavbar";
 import Footer from "../../../../examples/Footer";
 import MDBox from "../../../../components/MDBox";
 import MDTypography from "../../../../components/MDTypography";
-import MDButton from "../../../../components/MDButton";
-import { IconButton, Tooltip, Card, CardContent, TextField, InputAdornment } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { TextField, InputAdornment, Card, CardContent, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClientsData from "./components/clientsdata";
-import Grid from "@mui/material/Grid";
 import ComplexStatisticsCard from "../../../../examples/Cards/StatisticsCards/ComplexStatisticsCard";
 
 const ClientsPage = () => {
@@ -69,7 +66,7 @@ const ClientsPage = () => {
           </Grid>
         </Grid>
 
-        {/* Clients Table with Filters */}
+        {/* Clients Table with Search and Filters */}
         <MDBox pt={4} pb={2} position="relative">
           <MDTypography variant="h4" fontWeight="medium" mb={2}>
             Clients
@@ -82,7 +79,7 @@ const ClientsPage = () => {
             <CardContent>
               <Grid container spacing={2} alignItems="center">
                 {/* Search Field */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={9}>
                   <TextField
                     fullWidth
                     label="Search Clients"
@@ -101,26 +98,15 @@ const ClientsPage = () => {
 
                 {/* Filter Button */}
                 <Grid item xs={12} md={3}>
-                  <MDButton variant="outlined" color="primary" startIcon={<FilterListIcon />}>
-                    Filter
-                  </MDButton>
-                </Grid>
-
-                {/* Add Client Button */}
-                <Grid item xs={12} md={3} textAlign="right">
-                  <Tooltip title="Add Client" placement="left">
-                    <IconButton
-                      sx={{
-                        backgroundColor: "info.main",
-                        color: "white",
-                        "&:hover": { backgroundColor: "info.dark" },
-                        transition: "0.3s",
-                        boxShadow: 3,
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Tooltip>
+                  <MDBox textAlign="right">
+                    <MDBox component="span" sx={{ display: "inline-flex", gap: 1 }}>
+                      <MDBox component="span">
+                        <MDButton variant="outlined" color="primary" startIcon={<FilterListIcon />}>
+                          Filter
+                        </MDButton>
+                      </MDBox>
+                    </MDBox>
+                  </MDBox>
                 </Grid>
               </Grid>
 
