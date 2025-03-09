@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DataTable from "examples/Tables/DataTable";
-import TicketDetailsModal from "./TicketDetailsModal";
 
+// Define table columns
 const ticketColumns = [
   { Header: "ID", accessor: "id", width: "10%" },
   { Header: "Title", accessor: "title", width: "20%" },
@@ -12,50 +12,46 @@ const ticketColumns = [
   { Header: "Description", accessor: "description", width: "25%" },
 ];
 
-const TicketData = () => {
+const TicketData = ({ onTicketClick }) => {
   const [tickets, setTickets] = useState([]);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     axios.get("https://app.webitservices.com/api/tickets")
       .then(response => {
         console.log("Tickets API Response:", response.data);
-        setTickets(response.data.map(ticket => ({
+        const formattedTickets = response.data.map(ticket => ({
           id: ticket.id || "N/A",
-          title: ticket.title || "No Title",
+          title: (
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                color: "blue",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+              onClick={() => onTicketClick(ticket)}
+            >
+              {ticket.title || "No Title"}
+            </button>
+          ),
           status: ticket.status || "Unknown",
           priority: ticket.priority || "Unassigned",
           impact: ticket.impact || "Unspecified",
           description: ticket.description || "No Description Available",
-          onClick: () => handleRowClick(ticket), // 🟢 Correctly passing onClick event
-        })));
+        }));
+        setTickets(formattedTickets);
       })
       .catch(error => console.error("Error fetching tickets:", error));
-  }, []);
-
-  const handleRowClick = (ticket) => {
-    setSelectedTicket(ticket);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedTicket(null);
-  };
+  }, [onTicketClick]);
 
   return (
-    <>
-      <DataTable
-        table={{
-          columns: ticketColumns,
-          rows: tickets,
-        }}
-      />
-
-      {/* Ticket Details Modal */}
-      <TicketDetailsModal ticket={selectedTicket} open={isModalOpen} onClose={handleCloseModal} />
-    </>
+    <DataTable
+      table={{
+        columns: ticketColumns,
+        rows: tickets,
+      }}
+    />
   );
 };
 
