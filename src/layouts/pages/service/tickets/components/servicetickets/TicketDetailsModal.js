@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import MDBox from "components/MDBox";
 
 const TicketDetailsModal = ({ ticket, open, onClose }) => {
-  const dragRef = useRef(null); // Reference for Draggable component
+  const dragRef = useRef(null);
 
   return (
     <Modal
@@ -14,13 +14,15 @@ const TicketDetailsModal = ({ ticket, open, onClose }) => {
       closeAfterTransition
       BackdropComponent={Backdrop}
       BackdropProps={{ timeout: 500 }}
+      disableEnforceFocus // 🛑 FIX: Prevents focus trapping error
+      disableAutoFocus // 🛑 FIX: Prevents modal trying to auto-focus
       aria-labelledby="ticket-modal-title"
       aria-describedby="ticket-modal-description"
     >
       <Fade in={open}>
         <Draggable handle=".modal-header" cancel={'[class*="MuiDialogContent-root"]'}>
           <Paper
-            ref={dragRef} // Correctly referencing the Paper for Draggable
+            ref={dragRef}
             elevation={3}
             sx={{
               position: "absolute",
