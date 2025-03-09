@@ -182,7 +182,7 @@ const handleSaveProject = async () => {
     };
 
     console.log('Sending payload:', payload); // Log the payload
-    const response = await axios.post("https://app.webitservices.com/api/projects/", payload);
+    const response = await axios.post("https://app.webitservices.com/api/projects", payload);
     navigate(`/projects/${response.data.id}`);
     onClose();
   } catch (error) {
