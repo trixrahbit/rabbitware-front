@@ -18,12 +18,30 @@ const clientColumns = [
   { Header: "Phone", accessor: "phone", width: "30%" },
 ];
 
-const ClientsData = ({ searchQuery }) => {
+const ClientsData = () => {
   const { clients, setClients, fetchClients } = useClients();
   const { authToken, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("https://app.webitservices.com/api/get_clients", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setClients(response.data);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [setClients, authToken]);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -58,16 +76,59 @@ const ClientsData = ({ searchQuery }) => {
 
   return (
     <MDBox position="relative">
+      {/* Toolbar: Search, Filter, Add Client Button */}
       <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <MDTypography variant="h5" fontWeight="bold">
-          Client List
-        </MDTypography>
+        {/* Search Field */}
+        <Grid container spacing={2} alignItems="center" sx={{ flexGrow: 1 }}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Search Clients"
+              variant="outlined"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: "8px",
+                "&:hover": { backgroundColor: "#eeeeee" },
+              }}
+            />
+          </Grid>
+
+          {/* Filter Button */}
+          <Grid item xs={6} md={3}>
+            <MDButton
+              variant="outlined"
+              color="primary"
+              startIcon={<FilterListIcon />}
+              sx={{ width: "100%" }}
+            >
+              Filter
+            </MDButton>
+          </Grid>
+        </Grid>
+
+        {/* Add Client Button */}
         <Tooltip title="Add Client">
-          <MDButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
+          <MDButton
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleOpenModal}
+          >
             Add Client
           </MDButton>
         </Tooltip>
       </MDBox>
+
+      {/* Data Table */}
       <DataTable
         table={{
           columns: clientColumns,
@@ -83,7 +144,9 @@ const ClientsData = ({ searchQuery }) => {
             ),
           })),
         }}
+        isLoading={loading}
       />
+
       {isModalOpen && <AddClientModal open={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} />}
       {detailsModalOpen && selectedClient && <ClientDetailsModal open={detailsModalOpen} onClose={handleCloseDetailsModal} client={selectedClient} />}
     </MDBox>

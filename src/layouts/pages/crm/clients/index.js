@@ -12,8 +12,6 @@ import ClientsData from "./components/clientsdata";
 import ComplexStatisticsCard from "../../../../examples/Cards/StatisticsCards/ComplexStatisticsCard";
 
 const ClientsPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -65,7 +63,7 @@ const ClientsPage = () => {
           </Grid>
         </Grid>
 
-        {/* Clients Table with Search and Filters */}
+        {/* Clients Table */}
         <MDBox pt={4} pb={2} position="relative">
           <MDTypography variant="h4" fontWeight="medium" mb={2}>
             Clients
@@ -73,59 +71,7 @@ const ClientsPage = () => {
           <MDTypography variant="body2" color="secondary" mb={3}>
             Overview and management of your client data.
           </MDTypography>
-
-          {/* Search & Filter Card */}
-          <Card sx={{ p: 2, boxShadow: 4, borderRadius: "12px", backgroundColor: "white", mb: 3 }}>
-            <CardContent>
-              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
-                {/* Search Field */}
-                <Grid item xs={12} md={8}>
-                  <TextField
-                    fullWidth
-                    label="Search Clients"
-                    variant="outlined"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      backgroundColor: "#f5f5f5",
-                      borderRadius: "8px",
-                      "&:hover": { backgroundColor: "#eeeeee" },
-                    }}
-                  />
-                </Grid>
-
-                {/* Filter Button */}
-                <Grid item xs={12} md={3}>
-                  <Tooltip title="Filter Clients">
-                    <MDButton
-                      variant="contained"
-                      color="primary"
-                      startIcon={<FilterListIcon />}
-                      sx={{
-                        width: "100%",
-                        backgroundColor: "#3F51B5",
-                        "&:hover": { backgroundColor: "#303F9F" },
-                      }}
-                    >
-                      Filter
-                    </MDButton>
-                  </Tooltip>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-
-          {/* Clients Table */}
-          <MDBox mt={3} p={2} boxShadow={2} borderRadius="12px" bgcolor="white">
-            <ClientsData searchQuery={searchQuery} />
-          </MDBox>
+          <ClientsData />
         </MDBox>
       </MDBox>
       <Footer />
