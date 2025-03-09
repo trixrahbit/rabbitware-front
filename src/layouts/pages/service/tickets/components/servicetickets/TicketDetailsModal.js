@@ -5,7 +5,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import MDBox from "components/MDBox";
 
 const TicketDetailsModal = ({ ticket, open, onClose }) => {
-  const dragRef = useRef(null);
+  // Create a nodeRef for react-draggable
+  const nodeRef = useRef(null);
 
   return (
     <Modal
@@ -14,15 +15,13 @@ const TicketDetailsModal = ({ ticket, open, onClose }) => {
       closeAfterTransition
       BackdropComponent={Backdrop}
       BackdropProps={{ timeout: 500 }}
-      disableEnforceFocus // 🛑 FIX: Prevents focus trapping error
-      disableAutoFocus // 🛑 FIX: Prevents modal trying to auto-focus
       aria-labelledby="ticket-modal-title"
       aria-describedby="ticket-modal-description"
     >
       <Fade in={open}>
-        <Draggable handle=".modal-header" cancel={'[class*="MuiDialogContent-root"]'}>
+        <Draggable nodeRef={nodeRef} handle=".modal-header" cancel={'[class*="MuiDialogContent-root"]'}>
           <Paper
-            ref={dragRef}
+            ref={nodeRef}
             elevation={3}
             sx={{
               position: "absolute",
@@ -36,7 +35,7 @@ const TicketDetailsModal = ({ ticket, open, onClose }) => {
               borderRadius: "10px",
             }}
           >
-            {/* Modal Header - Draggable */}
+            {/* Modal Header */}
             <MDBox
               className="modal-header"
               display="flex"
