@@ -53,7 +53,7 @@ const CalendarBooking = () => {
           throw new Error('Invalid booking link.');
         }
 
-        const response = await axios.get(`http://localhost:8000/booking/${uuid}`, {
+        const response = await axios.get(`https://app.webitservices.com/api/booking/${uuid}`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             'X-CSRF-Token': 'your-csrf-token', // Ensure your backend is handling CSRF tokens

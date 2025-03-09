@@ -24,7 +24,7 @@ const ApplicationUsersData = () => {
       console.error('Organization ID is not set, cannot fetch users.');
       return;
     }
-    const url = `http://localhost:8000/organizations/${orgId}/users`;
+    const url = `https://app.webitservices.com/api/organizations/${orgId}/users`;
     try {
       const response = await axios.get(url, {
         headers: {
@@ -52,7 +52,7 @@ const ApplicationUsersData = () => {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/organizations/${orgId}/users`, userData, {
+      await axios.post(`https://app.webitservices.com/api/organizations/${orgId}/users`, userData, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -71,7 +71,7 @@ const ApplicationUsersData = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:8000/organizations/${orgId}/users/${userId}`, {
+      await axios.delete(`https://app.webitservices.com/api/organizations/${orgId}/users/${userId}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       console.log("User deleted successfully");
@@ -89,7 +89,7 @@ const handleEditUser = (user) => {
 // Function to handle the saving of the edited user
 const handleSaveEditedUser = async (userId, userData) => {
   try {
-    await axios.put(`http://localhost:8000/organizations/${currentOrg?.id}/users/${userId}`, userData, {
+    await axios.put(`https://app.webitservices.com/api/organizations/${currentOrg?.id}/users/${userId}`, userData, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },

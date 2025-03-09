@@ -29,9 +29,9 @@ const ChecklistData = ({
       try {
         let response;
         if (itemType === "tasks") {
-          response = await axios.get(`http://localhost:8000/checklists/task/${itemId}`);
+          response = await axios.get(`https://app.webitservices.com/api/checklists/task/${itemId}`);
         } else if (itemType === "stories") {
-          response = await axios.get(`http://localhost:8000/checklists/story/${itemId}`);
+          response = await axios.get(`https://app.webitservices.com/api/checklists/story/${itemId}`);
         }
 
         if (response && response.data) {
@@ -64,7 +64,7 @@ const ChecklistData = ({
 
       setChecklists(updatedChecklists);
 
-      await axios.put(`http://localhost:8000/checklists/${checklistId}/items/${itemId}`, {
+      await axios.put(`https://app.webitservices.com/api/checklists/${checklistId}/items/${itemId}`, {
         completed: checked,
         completedBy: "current_user",
         completedAt: new Date().toISOString(),
@@ -76,7 +76,7 @@ const ChecklistData = ({
 
   const handleDeleteItem = async (checklistId, itemId) => {
     try {
-      await axios.delete(`http://localhost:8000/checklists/${checklistId}/items/${itemId}`);
+      await axios.delete(`https://app.webitservices.com/api/checklists/${checklistId}/items/${itemId}`);
       const updatedChecklists = checklists.map(checklist =>
         checklist.id === checklistId
           ? {
@@ -108,7 +108,7 @@ const ChecklistData = ({
 
       setChecklists(updatedChecklists);
 
-      await axios.put(`http://localhost:8000/checklists/${checklistId}/items/${itemId}`, {
+      await axios.put(`https://app.webitservices.com/api/checklists/${checklistId}/items/${itemId}`, {
         description,
       });
     } catch (error) {
@@ -129,7 +129,7 @@ const ChecklistData = ({
     setChecklists(updatedChecklists);
 
     try {
-      await axios.put(`http://localhost:8000/checklists/${checklistId}/reorder`, {
+      await axios.put(`https://app.webitservices.com/api/checklists/${checklistId}/reorder`, {
         items: reorderedItems.map((item, index) => ({ id: item.id, order: index })),
       });
     } catch (error) {
@@ -146,7 +146,7 @@ const ChecklistData = ({
       );
       setChecklists(updatedChecklists);
 
-      await axios.put(`http://localhost:8000/checklists/${checklistId}`, {
+      await axios.put(`https://app.webitservices.com/api/checklists/${checklistId}`, {
         name: newName,
       });
     } catch (error) {

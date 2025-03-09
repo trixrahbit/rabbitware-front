@@ -49,7 +49,7 @@ const ProjectEditor = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/projects/${projectId}`);
+        const response = await axios.get(`https://app.webitservices.com/api/projects/${projectId}`);
         setProject(response.data);
       } catch (error) {
         console.error("Error fetching project:", error);
@@ -63,7 +63,7 @@ const ProjectEditor = () => {
     try {
       if (project) {
         if (currentItemType === "Phase") {
-          const response = await axios.post(`http://localhost:8000/phases`, {
+          const response = await axios.post(`https://app.webitservices.com/api/phases`, {
             ...item,
             project_id: project.id,
           });
@@ -73,7 +73,7 @@ const ProjectEditor = () => {
           }));
         } else if (currentItemType === "Task") {
           const phase_id = project.phases.length > 0 ? project.phases[project.phases.length - 1].id : null;
-          const response = await axios.post(`http://localhost:8000/tasks`, {
+          const response = await axios.post(`https://app.webitservices.com/api/tasks`, {
             ...item,
             project_id: project.id,
             phase_id: phase_id,
@@ -87,7 +87,7 @@ const ProjectEditor = () => {
             ),
           }));
         } else if (currentItemType === "Sprint") {
-          const response = await axios.post(`http://localhost:8000/sprints`, {
+          const response = await axios.post(`https://app.webitservices.com/api/sprints`, {
             ...item,
             project_id: project.id,
           });
@@ -97,7 +97,7 @@ const ProjectEditor = () => {
           }));
         } else if (currentItemType === "Story") {
           const sprint_id = project.sprints.length > 0 ? project.sprints[project.sprints.length - 1].id : null;
-          const response = await axios.post(`http://localhost:8000/stories`, {
+          const response = await axios.post(`https://app.webitservices.com/api/stories`, {
             ...item,
             project_id: project.id,
             sprint_id: sprint_id,
@@ -119,7 +119,7 @@ const ProjectEditor = () => {
 
   const handleDeleteItem = async (itemType, itemId) => {
     try {
-      await axios.delete(`http://localhost:8000/${itemType}/${itemId}`);
+      await axios.delete(`https://app.webitservices.com/api/${itemType}/${itemId}`);
       setProject((prevProject) => {
         if (itemType === "phases") {
           return {
@@ -180,7 +180,7 @@ const ProjectEditor = () => {
       };
 
       console.log(`Updating task ${taskId} with data:`, payload);
-      await axios.put(`http://localhost:8000/tasks/${taskId}`, payload);
+      await axios.put(`https://app.webitservices.com/api/tasks/${taskId}`, payload);
     } catch (error) {
       handleRequestError(error);
     }
@@ -202,7 +202,7 @@ const ProjectEditor = () => {
       };
 
       console.log(`Updating story ${storyId} with data:`, payload);
-      await axios.put(`http://localhost:8000/stories/${storyId}`, payload);
+      await axios.put(`https://app.webitservices.com/api/stories/${storyId}`, payload);
     } catch (error) {
       handleRequestError(error);
     }

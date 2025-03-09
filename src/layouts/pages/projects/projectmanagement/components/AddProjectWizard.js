@@ -137,7 +137,7 @@ const AddProjectWizard = ({ open, onClose }) => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/templates");
+      const response = await axios.get("https://app.webitservices.com/api/templates");
       setTemplates(response.data);
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -182,7 +182,7 @@ const handleSaveProject = async () => {
     };
 
     console.log('Sending payload:', payload); // Log the payload
-    const response = await axios.post("http://localhost:8000/projects/", payload);
+    const response = await axios.post("https://app.webitservices.com/api/projects/", payload);
     navigate(`/projects/${response.data.id}`);
     onClose();
   } catch (error) {

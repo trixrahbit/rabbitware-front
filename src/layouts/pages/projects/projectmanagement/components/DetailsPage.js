@@ -29,7 +29,7 @@ const DetailsPage = () => {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/${itemType}/${itemId}`);
+        const response = await axios.get(`https://app.webitservices.com/api/${itemType}/${itemId}`);
         setItem(response.data);
       } catch (error) {
         console.error(`Error fetching ${itemType}:`, error);
@@ -41,7 +41,7 @@ const DetailsPage = () => {
 
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:8000/${itemType}/${itemId}`, item);
+      await axios.put(`https://app.webitservices.com/api/${itemType}/${itemId}`, item);
       navigate(-1); // Navigate back to the previous page
     } catch (error) {
       console.error(`Error updating ${itemType}:`, error);

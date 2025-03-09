@@ -29,7 +29,7 @@ const TemplateSelectionWizard = ({ open, onClose }) => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/templates");
+      const response = await axios.get("https://app.webitservices.com/api/templates");
       setTemplates(response.data);
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -49,7 +49,7 @@ const TemplateSelectionWizard = ({ open, onClose }) => {
         sprints: selectedTemplate.sprints,
         stories: selectedTemplate.stories,
       };
-      const response = await axios.post("http://localhost:8000/projects", newProject);
+      const response = await axios.post("https://app.webitservices.com/api/projects", newProject);
       onClose();
       // Navigate to the newly created project page, if needed
     } catch (error) {

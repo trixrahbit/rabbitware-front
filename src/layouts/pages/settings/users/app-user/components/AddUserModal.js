@@ -28,7 +28,7 @@ useEffect(() => {
     return; // Early return if orgId is not available
   }
   // Correctly use template literals with backticks for variable interpolation
-  axios.get(`http://localhost:8000/organizations/${orgId}/roles`)
+  axios.get(`https://app.webitservices.com/api/organizations/${orgId}/roles`)
     .then(response => {
       setAvailableRoles(response.data.map(role => role.name)); // Assuming the response is an array of role objects
     })
