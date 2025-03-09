@@ -33,7 +33,7 @@ const handleSubmit = async (event) => {
   }
 
   try {
-    const response = await fetch('http://localhost:8000/register', {
+    const response = await fetch('https://app.webitservices.com/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
