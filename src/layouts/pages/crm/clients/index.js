@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 
 // Material Dashboard 2 PRO React components and layout
 import DashboardLayout from "../../../../examples/LayoutContainers/DashboardLayout";
@@ -6,14 +6,17 @@ import DashboardNavbar from "../../../../examples/Navbars/DashboardNavbar";
 import Footer from "../../../../examples/Footer";
 import MDBox from "../../../../components/MDBox";
 import MDTypography from "../../../../components/MDTypography";
-import MDButton from "../../../../components/MDButton"; // Make sure to import MDButton
-import { IconButton, Tooltip } from "@mui/material";
+import MDButton from "../../../../components/MDButton";
+import { IconButton, Tooltip, Card, CardContent, TextField, InputAdornment } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import ClientsData from "./components/clientsdata";
 import Grid from "@mui/material/Grid";
 import ComplexStatisticsCard from "../../../../examples/Cards/StatisticsCards/ComplexStatisticsCard";
 
 const ClientsPage = () => {
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <DashboardLayout>
@@ -37,7 +40,7 @@ const ClientsPage = () => {
                 color="success"
                 icon="store"
                 title="Revenue"
-                count="34k"
+                count="$34k"
                 percentage={{ color: "success", amount: "+1%", label: "than yesterday" }}
               />
             </MDBox>
@@ -47,21 +50,86 @@ const ClientsPage = () => {
               <ComplexStatisticsCard
                 color="primary"
                 icon="person_add"
-                title="Followers"
-                count="+91"
-                percentage={{ color: "success", amount: "", label: "Just updated" }}
+                title="New Clients"
+                count="+15"
+                percentage={{ color: "success", amount: "", label: "This week" }}
+              />
+            </MDBox>
+          </Grid>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              <ComplexStatisticsCard
+                color="warning"
+                icon="pending_actions"
+                title="Pending Requests"
+                count="7"
+                percentage={{ color: "error", amount: "-5%", label: "from last month" }}
               />
             </MDBox>
           </Grid>
         </Grid>
+
+        {/* Clients Table with Filters */}
         <MDBox pt={4} pb={2} position="relative">
           <MDTypography variant="h4" fontWeight="medium" mb={2}>
             Clients
           </MDTypography>
-          <MDTypography variant="body2" color="secondary" mb={2}>
+          <MDTypography variant="body2" color="secondary" mb={3}>
             Overview and management of your client data.
           </MDTypography>
-          <ClientsData />
+
+          <Card sx={{ p: 2, boxShadow: 3, borderRadius: "12px" }}>
+            <CardContent>
+              <Grid container spacing={2} alignItems="center">
+                {/* Search Field */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Search Clients"
+                    variant="outlined"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Filter Button */}
+                <Grid item xs={12} md={3}>
+                  <MDButton variant="outlined" color="primary" startIcon={<FilterListIcon />}>
+                    Filter
+                  </MDButton>
+                </Grid>
+
+                {/* Add Client Button */}
+                <Grid item xs={12} md={3} textAlign="right">
+                  <Tooltip title="Add Client" placement="left">
+                    <IconButton
+                      sx={{
+                        backgroundColor: "info.main",
+                        color: "white",
+                        "&:hover": { backgroundColor: "info.dark" },
+                        transition: "0.3s",
+                        boxShadow: 3,
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Grid>
+              </Grid>
+
+              {/* Clients Table */}
+              <MDBox mt={3}>
+                <ClientsData searchQuery={searchQuery} />
+              </MDBox>
+            </CardContent>
+          </Card>
         </MDBox>
       </MDBox>
       <Footer />
@@ -69,9 +137,4 @@ const ClientsPage = () => {
   );
 };
 
-
-
-
 export default ClientsPage;
-
-
