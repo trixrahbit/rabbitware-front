@@ -54,7 +54,7 @@ function Footer({ company, links }) {
         by
         <Link href={href} target="_blank">
           <MDTypography variant="button" fontWeight="medium">
-            &nbsp;Rabbit Technologies&nbsp;
+            &nbsp;Rabbit&nbsp;
           </MDTypography>
         </Link>
       </MDBox>
