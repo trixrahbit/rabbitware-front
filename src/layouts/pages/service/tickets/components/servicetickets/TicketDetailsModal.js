@@ -5,7 +5,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import MDBox from "components/MDBox";
 
 const TicketDetailsModal = ({ ticket, open, onClose }) => {
-  const dragRef = useRef(null); // Reference for Draggable component
+  // Create a nodeRef for react-draggable
+  const nodeRef = useRef(null);
 
   return (
     <Modal
@@ -18,9 +19,9 @@ const TicketDetailsModal = ({ ticket, open, onClose }) => {
       aria-describedby="ticket-modal-description"
     >
       <Fade in={open}>
-        <Draggable handle=".modal-header" cancel={'[class*="MuiDialogContent-root"]'}>
+        <Draggable nodeRef={nodeRef} handle=".modal-header" cancel={'[class*="MuiDialogContent-root"]'}>
           <Paper
-            ref={dragRef} // Correctly referencing the Paper for Draggable
+            ref={nodeRef}
             elevation={3}
             sx={{
               position: "absolute",
@@ -34,7 +35,7 @@ const TicketDetailsModal = ({ ticket, open, onClose }) => {
               borderRadius: "10px",
             }}
           >
-            {/* Modal Header - Draggable */}
+            {/* Modal Header */}
             <MDBox
               className="modal-header"
               display="flex"
