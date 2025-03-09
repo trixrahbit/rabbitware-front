@@ -58,7 +58,7 @@ const handleSaveOrg = async (orgData) => {
 console.log("Sending organization data:", dataToSend);
 
   try {
-    const response = await axios.post(`http://localhost:8000/${clientId}/organizations/`, dataToSend, {
+    const response = await axios.post(`https://app.webitservices.com/api/${clientId}/organizations/`, dataToSend, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
     console.log("Saved organization:", response.data);

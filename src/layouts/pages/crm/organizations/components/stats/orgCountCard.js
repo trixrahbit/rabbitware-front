@@ -16,7 +16,7 @@ const StatCard = () => {
       if (!currentOrg?.id) return;
 
       try {
-        const response = await axios.get(`http://localhost:8000/${currentOrg.id}/stats`, {
+        const response = await axios.get(`https://app.webitservices.com/api/${currentOrg.id}/stats`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setStats({
