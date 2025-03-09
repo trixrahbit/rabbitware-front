@@ -85,9 +85,9 @@ function Footer({ company, links }) {
 Footer.defaultProps = {
   company: { href: "https://www.automsp.ai/", name: "AutoMSP" },
   links: [
-    { href: "https://www.automsp.ai/", name: "Rabbit Technologies" },
-    { href: "https://www.automsp.ai/", name: "About Us" },
-    { href: "https://www.automsp.ai/", name: "Blog" },
+    { href: "https://www.webitservices.com/", name: "WEBIT Services" },
+    { href: "www.webitservices.com/", name: "About Us" },
+    { href: "www.webitservices.com/", name: "Blog" },
     { href: "https://www.automsp.ai/", name: "License" },
   ],
 };
