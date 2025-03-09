@@ -54,21 +54,7 @@ const ClientsData = () => {
 
   return (
     <MDBox position="relative">
-      <Tooltip title="Add Client" placement="right">
-        <IconButton
-          onClick={handleOpenModal}
-          color="primary"
-          sx={{
-            position: 'absolute',
-            right: 0,
-            top: -45,
-            backgroundColor: "info.main",
-            '&:hover': { backgroundColor: "info.dark" },
-          }}
-        >
-          <AddIcon />
-        </IconButton>
-      </Tooltip>
+
       <DataTable
         table={{
           columns: clientColumns,
