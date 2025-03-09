@@ -34,7 +34,7 @@ const fetchClients = async () => {
   }
   console.log(`Fetching organizations for clientId: ${clientId} with authToken: ${authToken}`);
   try {
-    const response = await axios.get(`https://app.webitservices.com/api/${clientId}/organizations/`, {
+    const response = await axios.get(`https://app.webitservices.com/api/${clientId}/organizations`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
     console.log(response.data); // Check the response
@@ -58,7 +58,7 @@ const handleSaveOrg = async (orgData) => {
 console.log("Sending organization data:", dataToSend);
 
   try {
-    const response = await axios.post(`https://app.webitservices.com/api/${clientId}/organizations/`, dataToSend, {
+    const response = await axios.post(`https://app.webitservices.com/api/${clientId}/organizations`, dataToSend, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
     console.log("Saved organization:", response.data);
