@@ -12,7 +12,7 @@ export const ClientsProvider = ({ children }) => {
 useEffect(() => {
   const fetchClients = async () => {
     try {
-      const response = await axios.get("https://app.webitservices.com/get_clients", {
+      const response = await axios.get("https://app.webitservices.com/api/get_clients", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setClients(response.data);
@@ -20,7 +20,7 @@ useEffect(() => {
       // Assuming that user has a client_id that you can use to fetch the subscription
       if (response.data.length > 0) {
         const clientId = response.data[0].id; // Replace 0 with the appropriate index if multiple clients
-        const subscriptionResponse = await axios.get(`https://app.webitservices.com/clients/${clientId}/subscriptions`, {
+        const subscriptionResponse = await axios.get(`https://app.webitservices.com/api/clients/${clientId}/subscriptions`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setSubscription(subscriptionResponse.data);
