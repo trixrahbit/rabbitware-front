@@ -3,6 +3,7 @@ import DataTable from "../../../../../examples/Tables/DataTable";
 import { useAuth } from "../../../../../context/AuthContext";
 import MDBox from "../../../../../components/MDBox";
 import MDButton from "../../../../../components/MDButton";
+import MDTypography from "../../../../components/MDTypography";
 import AddClientModal from "./AddClientModal";
 import { IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
