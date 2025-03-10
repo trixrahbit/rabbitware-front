@@ -41,7 +41,10 @@ const ticketColumns = [
 const TicketData = ({ onTicketClick }) => {
   const [tickets, setTickets] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState([]);
+const [isModalOpen, setIsModalOpen] = useState(false);
 
+const handleOpenModal = () => setIsModalOpen(true);
+const handleCloseModal = () => setIsModalOpen(false);
   useEffect(() => {
     axios.get("https://app.webitservices.com/api/tickets")
       .then(response => {
@@ -65,14 +68,22 @@ const TicketData = ({ onTicketClick }) => {
       return isSelected ? prev.filter(id => id !== ticketId) : [...prev, ticketId];
     });
   };
-
+const handleTicketCreated = (newTicket) => {
+  setTickets((prevTickets) => [...prevTickets, newTicket]);
+};
   return (
     <Box>
       {/* Actions Bar */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button variant="contained" color="success" startIcon={<AddCircleOutlineIcon />}>
-          Create Ticket
-        </Button>
+<Button
+  variant="contained"
+  color="success"
+  startIcon={<AddCircleOutlineIcon />}
+  onClick={handleCreateTicket} // ✅ Add the click handler
+>
+  Create Ticket
+</Button>
+
 
         {selectedTickets.length > 0 && (
           <Box>
