@@ -21,7 +21,6 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
     contact_id: "",
   });
 
-  // Fetch dropdown data
   const [dropdownData, setDropdownData] = useState({
     clients: [],
     priorities: [],
@@ -104,6 +103,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Client" name="client_id"
               value={formData.client_id} onChange={handleChange} sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.clients.map((c) => (
                 <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
@@ -112,6 +112,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Priority" name="priority"
               value={formData.priority} onChange={handleChange} sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.priorities.map((p) => (
                 <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
@@ -123,6 +124,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Impact" name="impact"
               value={formData.impact} onChange={handleChange}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.impacts.map((i) => (
                 <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>
@@ -131,6 +133,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Status" name="status"
               value={formData.status} onChange={handleChange} sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.statuses.map((s) => (
                 <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
@@ -139,7 +142,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth label="Due Date" name="due_date" type="date"
               value={formData.due_date} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             />
           </Grid>
         </Grid>
@@ -154,6 +157,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Billing Agreement" name="billing_agreement_id"
               value={formData.billing_agreement_id} onChange={handleChange}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.billingAgreements.map((b) => (
                 <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
@@ -164,6 +168,7 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Contact" name="contact_id"
               value={formData.contact_id} onChange={handleChange}
+              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
             >
               {dropdownData.contacts.map((c) => (
                 <MenuItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</MenuItem>
