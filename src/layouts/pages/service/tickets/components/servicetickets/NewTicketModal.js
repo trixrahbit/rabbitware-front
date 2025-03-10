@@ -1,138 +1,220 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Modal, Box, TextField, Button, Typography, MenuItem } from "@mui/material";
+import {
+  Modal,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  MenuItem,
+  Grid,
+} from "@mui/material";
+import { styled } from "@mui/system";
+
+// Styled Box for modern look
+const StyledBox = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 600,
+  background: theme.palette.background.paper,
+  boxShadow: 24,
+  borderRadius: 12,
+  padding: "24px",
+  outline: "none",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+}));
 
 const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
-  // State for form fields
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [clientId, setClientId] = useState("");
-  const [priority, setPriority] = useState("");
-  const [impact, setImpact] = useState("");
-  const [status, setStatus] = useState("");
-  const [slaConditionId, setSlaConditionId] = useState("");
-  const [queueId, setQueueId] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [billingAgreementId, setBillingAgreementId] = useState("");
-  const [contactId, setContactId] = useState("");
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    client_id: "",
+    priority: "",
+    impact: "",
+    status: "",
+    sla_condition_id: "",
+    queue_id: "",
+    due_date: "",
+    billing_agreement_id: "",
+    contact_id: "",
+  });
 
   // Dropdown options
-  const [clients, setClients] = useState([]);
-  const [priorities, setPriorities] = useState([]);
-  const [impacts, setImpacts] = useState([]);
-  const [statuses, setStatuses] = useState([]);
-  const [slaConditions, setSlaConditions] = useState([]);
-  const [queues, setQueues] = useState([]);
-  const [billingAgreements, setBillingAgreements] = useState([]);
-  const [contacts, setContacts] = useState([]);
+  const [dropdownData, setDropdownData] = useState({
+    clients: [],
+    priorities: [],
+    impacts: [],
+    statuses: [],
+    slaConditions: [],
+    queues: [],
+    billingAgreements: [],
+    contacts: [],
+  });
 
   // Fetch dropdown data
   useEffect(() => {
-    axios.get("https://app.webitservices.com/api/clients").then(res => setClients(res.data));
-    axios.get("https://app.webitservices.com/api/priorities").then(res => setPriorities(res.data));
-    axios.get("https://app.webitservices.com/api/impacts").then(res => setImpacts(res.data));
-    axios.get("https://app.webitservices.com/api/statuses").then(res => setStatuses(res.data));
-    axios.get("https://app.webitservices.com/api/sla_conditions").then(res => setSlaConditions(res.data));
-    axios.get("https://app.webitservices.com/api/queues").then(res => setQueues(res.data));
-    axios.get("https://app.webitservices.com/api/billing_agreements").then(res => setBillingAgreements(res.data));
-    axios.get("https://app.webitservices.com/api/contacts").then(res => setContacts(res.data));
-  }, []);
+    const fetchDropdowns = async () => {
+      try {
+        const responses = await Promise.all([
+          axios.get("https://app.webitservices.com/api/clients"),
+          axios.get("https://app.webitservices.com/api/priorities"),
+          axios.get("https://app.webitservices.com/api/impacts"),
+          axios.get("https://app.webitservices.com/api/statuses"),
+          axios.get("https://app.webitservices.com/api/sla_conditions"),
+          axios.get("https://app.webitservices.com/api/queues"),
+          axios.get("https://app.webitservices.com/api/billing_agreements"),
+          axios.get("https://app.webitservices.com/api/contacts"),
+        ]);
 
-  const handleCreateTicket = () => {
-    const newTicket = {
-      title,
-      description,
-      client_id: clientId,
-      priority,
-      impact,
-      status,
-      sla_condition_id: slaConditionId,
-      queue_id: queueId,
-      due_date: dueDate,
-      billing_agreement_id: billingAgreementId,
-      contact_id: contactId,
+        setDropdownData({
+          clients: responses[0].data,
+          priorities: responses[1].data,
+          impacts: responses[2].data,
+          statuses: responses[3].data,
+          slaConditions: responses[4].data,
+          queues: responses[5].data,
+          billingAgreements: responses[6].data,
+          contacts: responses[7].data,
+        });
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      }
     };
 
+    if (open) fetchDropdowns();
+  }, [open]);
+
+  // Handle form input changes
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Handle ticket creation
+  const handleCreateTicket = () => {
     axios
-      .post("https://app.webitservices.com/api/tickets", newTicket)
+      .post("https://app.webitservices.com/api/tickets", formData)
       .then((response) => {
-        onTicketCreated(response.data); // Pass new ticket back to parent
-        onClose(); // Close modal
+        onTicketCreated(response.data);
+        onClose();
       })
       .catch((error) => console.error("Error creating ticket:", error));
   };
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 500,
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 4,
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h6" mb={2}>Create New Ticket</Typography>
+      <StyledBox>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" color="primary">
+          🎫 Create a New Ticket
+        </Typography>
+
+        <Grid container spacing={2}>
+          {/* Left Column */}
+          <Grid item xs={6}>
+            <TextField
+              fullWidth label="Title" variant="outlined" name="title"
+              value={formData.title} onChange={handleChange}
+            />
+            <TextField
+              fullWidth label="Client" variant="outlined" name="client_id"
+              select value={formData.client_id} onChange={handleChange} sx={{ mt: 2 }}
+            >
+              {dropdownData.clients.map((c) => (
+                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth label="Priority" variant="outlined" name="priority"
+              select value={formData.priority} onChange={handleChange} sx={{ mt: 2 }}
+            >
+              {dropdownData.priorities.map((p) => (
+                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth label="Impact" variant="outlined" name="impact"
+              select value={formData.impact} onChange={handleChange} sx={{ mt: 2 }}
+            >
+              {dropdownData.impacts.map((i) => (
+                <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          {/* Right Column */}
+          <Grid item xs={6}>
+            <TextField
+              fullWidth label="Status" variant="outlined" name="status"
+              select value={formData.status} onChange={handleChange}
+            >
+              {dropdownData.statuses.map((s) => (
+                <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth label="SLA Condition" variant="outlined" name="sla_condition_id"
+              select value={formData.sla_condition_id} onChange={handleChange} sx={{ mt: 2 }}
+            >
+              {dropdownData.slaConditions.map((sla) => (
+                <MenuItem key={sla.id} value={sla.id}>{sla.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth label="Queue" variant="outlined" name="queue_id"
+              select value={formData.queue_id} onChange={handleChange} sx={{ mt: 2 }}
+            >
+              {dropdownData.queues.map((q) => (
+                <MenuItem key={q.id} value={q.id}>{q.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth label="Due Date" variant="outlined" name="due_date" type="date"
+              value={formData.due_date} onChange={handleChange} sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+        </Grid>
 
         <TextField
-          fullWidth label="Title" variant="outlined" value={title}
-          onChange={(e) => setTitle(e.target.value)} sx={{ mb: 2 }}
+          fullWidth label="Description" variant="outlined" multiline rows={3} name="description"
+          value={formData.description} onChange={handleChange} sx={{ mt: 2 }}
         />
-        <TextField
-          fullWidth label="Description" variant="outlined" multiline rows={3}
-          value={description} onChange={(e) => setDescription(e.target.value)} sx={{ mb: 2 }}
-        />
-        <TextField
-          fullWidth select label="Client" value={clientId} onChange={(e) => setClientId(e.target.value)}
-          sx={{ mb: 2 }}
-        >
-          {clients.map(client => <MenuItem key={client.id} value={client.id}>{client.name}</MenuItem>)}
-        </TextField>
 
-        <TextField fullWidth select label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)} sx={{ mb: 2 }}>
-          {priorities.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
-        </TextField>
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth label="Billing Agreement" variant="outlined" name="billing_agreement_id"
+              select value={formData.billing_agreement_id} onChange={handleChange}
+            >
+              {dropdownData.billingAgreements.map((b) => (
+                <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth label="Contact" variant="outlined" name="contact_id"
+              select value={formData.contact_id} onChange={handleChange}
+            >
+              {dropdownData.contacts.map((c) => (
+                <MenuItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+        </Grid>
 
-        <TextField fullWidth select label="Impact" value={impact} onChange={(e) => setImpact(e.target.value)} sx={{ mb: 2 }}>
-          {impacts.map(i => <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>)}
-        </TextField>
-
-        <TextField fullWidth select label="Status" value={status} onChange={(e) => setStatus(e.target.value)} sx={{ mb: 2 }}>
-          {statuses.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
-        </TextField>
-
-        <TextField fullWidth select label="SLA Condition" value={slaConditionId} onChange={(e) => setSlaConditionId(e.target.value)} sx={{ mb: 2 }}>
-          {slaConditions.map(sla => <MenuItem key={sla.id} value={sla.id}>{sla.name}</MenuItem>)}
-        </TextField>
-
-        <TextField fullWidth select label="Queue" value={queueId} onChange={(e) => setQueueId(e.target.value)} sx={{ mb: 2 }}>
-          {queues.map(q => <MenuItem key={q.id} value={q.id}>{q.name}</MenuItem>)}
-        </TextField>
-
-        <TextField fullWidth label="Due Date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-
-        <TextField fullWidth select label="Billing Agreement" value={billingAgreementId} onChange={(e) => setBillingAgreementId(e.target.value)} sx={{ mb: 2 }}>
-          {billingAgreements.map(b => <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>)}
-        </TextField>
-
-        <TextField fullWidth select label="Contact" value={contactId} onChange={(e) => setContactId(e.target.value)} sx={{ mb: 2 }}>
-          {contacts.map(c => <MenuItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</MenuItem>)}
-        </TextField>
-
-        <Box display="flex" justifyContent="space-between">
-          <Button variant="contained" color="primary" onClick={handleCreateTicket}>
-            Create Ticket
+        <Box display="flex" justifyContent="space-between" mt={3}>
+          <Button variant="contained" color="success" onClick={handleCreateTicket} sx={{ flex: 1, mr: 1 }}>
+            ✅ Create Ticket
           </Button>
-          <Button variant="outlined" onClick={onClose}>
-            Cancel
+          <Button variant="outlined" color="error" onClick={onClose} sx={{ flex: 1 }}>
+            ❌ Cancel
           </Button>
         </Box>
-      </Box>
+      </StyledBox>
     </Modal>
   );
 };
