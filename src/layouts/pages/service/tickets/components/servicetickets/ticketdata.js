@@ -6,6 +6,7 @@ import MergeIcon from "@mui/icons-material/CallMerge";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DataTable from "examples/Tables/DataTable";
 import MDTypography from "components/MDTypography";
+import NewTicketModal from "./NewTicketModal"; // ✅ Import the modal component
 
 // Define table columns
 const ticketColumns = [
@@ -13,7 +14,12 @@ const ticketColumns = [
     Header: "",
     accessor: "select",
     width: "5%",
-    Cell: ({ row }) => <Checkbox checked={row.original.selected} onChange={() => row.original.toggleSelect()} />,
+    Cell: ({ row }) => (
+      <Checkbox
+        checked={row.original.selected}
+        onChange={() => row.original.toggleSelect()}
+      />
+    ),
   },
   { Header: "ID", accessor: "id", width: "10%" },
   {
@@ -41,14 +47,16 @@ const ticketColumns = [
 const TicketData = ({ onTicketClick }) => {
   const [tickets, setTickets] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState([]);
-const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-const handleOpenModal = () => setIsModalOpen(true);
-const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
   useEffect(() => {
-    axios.get("https://app.webitservices.com/api/tickets")
-      .then(response => {
-        const formattedTickets = response.data.map(ticket => ({
+    axios
+      .get("https://app.webitservices.com/api/tickets")
+      .then((response) => {
+        const formattedTickets = response.data.map((ticket) => ({
           ...ticket,
           selected: false,
           onClick: () => onTicketClick(ticket),
@@ -56,34 +64,39 @@ const handleCloseModal = () => setIsModalOpen(false);
         }));
         setTickets(formattedTickets);
       })
-      .catch(error => console.error("Error fetching tickets:", error));
+      .catch((error) => console.error("Error fetching tickets:", error));
   }, [onTicketClick]);
 
   const toggleSelection = (ticketId) => {
-    setTickets(prevTickets => prevTickets.map(ticket =>
-      ticket.id === ticketId ? { ...ticket, selected: !ticket.selected } : ticket
-    ));
-    setSelectedTickets(prev => {
+    setTickets((prevTickets) =>
+      prevTickets.map((ticket) =>
+        ticket.id === ticketId
+          ? { ...ticket, selected: !ticket.selected }
+          : ticket
+      )
+    );
+    setSelectedTickets((prev) => {
       const isSelected = prev.includes(ticketId);
-      return isSelected ? prev.filter(id => id !== ticketId) : [...prev, ticketId];
+      return isSelected ? prev.filter((id) => id !== ticketId) : [...prev, ticketId];
     });
   };
-const handleTicketCreated = (newTicket) => {
-  setTickets((prevTickets) => [...prevTickets, newTicket]);
-};
+
+  const handleTicketCreated = (newTicket) => {
+    setTickets((prevTickets) => [...prevTickets, newTicket]); // ✅ Update state with new ticket
+  };
+
   return (
     <Box>
       {/* Actions Bar */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-<Button
-  variant="contained"
-  color="success"
-  startIcon={<AddCircleOutlineIcon />}
-  onClick={handleCreateTicket} // ✅ Add the click handler
->
-  Create Ticket
-</Button>
-
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<AddCircleOutlineIcon />}
+          onClick={handleOpenModal} // ✅ Open modal instead of undefined function
+        >
+          Create Ticket
+        </Button>
 
         {selectedTickets.length > 0 && (
           <Box>
@@ -108,6 +121,9 @@ const handleTicketCreated = (newTicket) => {
           rows: tickets,
         }}
       />
+
+      {/* New Ticket Modal */}
+      <NewTicketModal open={isModalOpen} onClose={handleCloseModal} onTicketCreated={handleTicketCreated} />
     </Box>
   );
 };
