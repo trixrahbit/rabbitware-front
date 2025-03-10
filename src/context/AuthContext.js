@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useMemo, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useMemo } from "react";
 
 // Safely parse JSON from localStorage
 const safeParse = (key) => {
@@ -11,20 +11,19 @@ const safeParse = (key) => {
   }
 };
 
+// ✅ Updated to include organization_id
 const initialAuthState = {
-  authToken: localStorage.getItem('authToken') || null,
-  user: safeParse('user'),
-  parentOrg: safeParse('parentOrg'),
-  currentOrg: safeParse('currentOrg'),
-  authOverride: false
+  authToken: localStorage.getItem("authToken") || null,
+  user: safeParse("user"),
+  organization: safeParse("organization"),  // ✅ Store org details
+  authOverride: false,
 };
 
 const authActionTypes = {
   SET_AUTH_TOKEN: "SET_AUTH_TOKEN",
   LOGOUT: "LOGOUT",
-  SET_USER: 'SET_USER',
-  SET_PARENT_ORG: 'SET_PARENT_ORG',
-  SET_CURRENT_ORG: 'SET_CURRENT_ORG',
+  SET_USER: "SET_USER",
+  SET_ORGANIZATION: "SET_ORGANIZATION",  // ✅ New action type
 };
 
 const authReducer = (state, action) => {
@@ -33,13 +32,11 @@ const authReducer = (state, action) => {
       return { ...state, authToken: action.payload };
     case authActionTypes.SET_USER:
       return { ...state, user: action.payload };
-    case authActionTypes.SET_PARENT_ORG:
-      return { ...state, parentOrg: action.payload };
-    case authActionTypes.SET_CURRENT_ORG:
-      return { ...state, currentOrg: action.payload };
+    case authActionTypes.SET_ORGANIZATION:  // ✅ Handle org
+      return { ...state, organization: action.payload };
     case authActionTypes.LOGOUT:
       localStorage.clear();
-      return { authToken: null, user: null, parentOrg: null, currentOrg: null };
+      return { authToken: null, user: null, organization: null };
     default:
       return state;
   }
@@ -51,18 +48,15 @@ const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
 
   const login = (token, user) => {
-    const parentOrg = user.organization;
-    const currentOrg = user.organization;
+    const organization = user.organization;  // ✅ Set the user's org
 
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('parentOrg', JSON.stringify(parentOrg));
-    localStorage.setItem('currentOrg', JSON.stringify(currentOrg));
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("organization", JSON.stringify(organization));  // ✅ Store organization
 
     dispatch({ type: authActionTypes.SET_AUTH_TOKEN, payload: token });
     dispatch({ type: authActionTypes.SET_USER, payload: user });
-    dispatch({ type: authActionTypes.SET_PARENT_ORG, payload: parentOrg });
-    dispatch({ type: authActionTypes.SET_CURRENT_ORG, payload: currentOrg });
+    dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });  // ✅ Update organization
   };
 
   const logout = () => {
@@ -70,11 +64,14 @@ const AuthProvider = ({ children }) => {
     dispatch({ type: authActionTypes.LOGOUT });
   };
 
-  const authContextValue = useMemo(() => ({
-    ...state,
-    login,
-    logout,
-  }), [state]);
+  const authContextValue = useMemo(
+    () => ({
+      ...state,
+      login,
+      logout,
+    }),
+    [state]
+  );
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };

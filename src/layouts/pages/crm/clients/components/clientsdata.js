@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "../../../../../examples/Tables/DataTable";
 import { useAuth } from "../../../../../context/AuthContext";
+import { useClients } from "../../../../../context/ClientsContext";
 import MDBox from "../../../../../components/MDBox";
 import MDButton from "../../../../../components/MDButton";
 import { Tooltip, Grid, TextField, InputAdornment } from "@mui/material";
@@ -9,7 +10,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddClientModal from "./AddClientModal";
 import ClientDetailsModal from "./ClientDetailModal";
-import { useClients } from "../../../../../context/ClientsContext";
 import axios from "axios";
 
 // Define columns for the clients table
@@ -20,8 +20,8 @@ const clientColumns = [
 ];
 
 const ClientsData = () => {
-  const { clients, setClients, fetchClients } = useClients();
-  const { authToken, user } = useAuth();
+  const { clients, setClients } = useClients();
+  const { authToken, organization } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -29,20 +29,22 @@ const ClientsData = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchClients = async () => {
+      if (!organization?.id) return; // Ensure org is available
       setLoading(true);
       try {
-        const response = await axios.get("https://app.webitservices.com/api/get_clients", {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+        const response = await axios.get(
+          `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
         setClients(response.data);
       } catch (error) {
         console.error("Error fetching clients:", error);
       }
       setLoading(false);
     };
-    fetchData();
-  }, [setClients, authToken]);
+    fetchClients();
+  }, [setClients, authToken, organization]);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -58,12 +60,13 @@ const ClientsData = () => {
   };
 
   const handleSaveClient = async (clientData) => {
-    const completeClientData = { ...clientData, creator_id: user?.id };
+    const completeClientData = { ...clientData, organization_id: organization?.id };
     try {
-      await axios.post("https://app.webitservices.com/api/clients", completeClientData, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      fetchClients();
+      await axios.post(
+        `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+        completeClientData,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
       handleCloseModal();
     } catch (error) {
       console.error("Error adding client:", error);
@@ -105,12 +108,7 @@ const ClientsData = () => {
 
           {/* Filter Button */}
           <Grid item xs={6} md={3}>
-            <MDButton
-              variant="outlined"
-              color="primary"
-              startIcon={<FilterListIcon />}
-              sx={{ width: "100%" }}
-            >
+            <MDButton variant="outlined" color="primary" startIcon={<FilterListIcon />} sx={{ width: "100%" }}>
               Filter
             </MDButton>
           </Grid>
@@ -118,12 +116,7 @@ const ClientsData = () => {
 
         {/* Add Client Button */}
         <Tooltip title="Add Client">
-          <MDButton
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenModal}
-          >
+          <MDButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
             Add Client
           </MDButton>
         </Tooltip>
@@ -138,7 +131,7 @@ const ClientsData = () => {
             name: (
               <button
                 onClick={() => handleOpenDetailsModal(client)}
-                style={{ textDecoration: 'none', border: 'none', background: 'none', padding: 0, color: 'blue', cursor: 'pointer' }}
+                style={{ textDecoration: "none", border: "none", background: "none", padding: 0, color: "blue", cursor: "pointer" }}
               >
                 {client.name}
               </button>
@@ -148,6 +141,7 @@ const ClientsData = () => {
         isLoading={loading}
       />
 
+      {/* Modals */}
       {isModalOpen && <AddClientModal open={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} />}
       {detailsModalOpen && selectedClient && <ClientDetailsModal open={detailsModalOpen} onClose={handleCloseDetailsModal} client={selectedClient} />}
     </MDBox>

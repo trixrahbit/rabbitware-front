@@ -7,81 +7,74 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import AddIcon from "@mui/icons-material/Add";
 import AddOrgModal from "./AddOrgModal";
-import ClientDetailsModal from "./OrgDetailModal";
+import OrgDetailModal from "./OrgDetailModal";
 
-const clientColumns = [
+const orgColumns = [
   { Header: "Name", accessor: "name", width: "30%" },
   { Header: "Domain", accessor: "domain", width: "30%" },
   { Header: "Phone", accessor: "phone", width: "30%" },
 ];
 
 const OrganizationsData = ({ onStatsFetched }) => {
-  const [clients, setClients] = useState([]);
-  const { authToken, currentOrg } = useAuth(); // Destructuring currentOrg from context
-  const clientId = currentOrg?.id;  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [organizations, setOrganizations] = useState([]);
+  const { authToken, organization } = useAuth(); // Fetch organization from context
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [orgStats, setOrgStats] = useState({
-    total: 0,
-    percentageChange: 0,
-  });
+  const [loading, setLoading] = useState(true);
 
-
-const fetchClients = async () => {
-  if (!clientId) {
-    console.log("clientId is missing.");
-    return; // Make sure clientId is not undefined/null
-  }
-  console.log(`Fetching organizations for clientId: ${clientId} with authToken: ${authToken}`);
-  try {
-    const response = await axios.get(`https://app.webitservices.com/api/${clientId}/organizations`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    console.log(response.data); // Check the response
-    setClients(response.data);
-  } catch (error) {
-    console.error("Error fetching organizations:", error);
-  }
-};
-
+  // Fetch organizations
+  const fetchOrganizations = async () => {
+    if (!organization?.id) return; // Ensure org is available
+    setLoading(true);
+    console.log(`Fetching organizations for orgId: ${organization.id} with authToken: ${authToken}`);
+    try {
+      const response = await axios.get(
+        `https://app.webitservices.com/api/organizations/${organization.id}`,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      console.log("Fetched organizations:", response.data);
+      setOrganizations(response.data);
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    fetchClients();
-  }, [authToken, clientId]); // Re-fetch when authToken or clientId changes
+    fetchOrganizations();
+  }, [authToken, organization]);
 
+  const handleSaveOrg = async (orgData) => {
+    if (!organization?.id) return;
+    const dataToSend = { ...orgData, organization_id: organization.id };
 
-const handleSaveOrg = async (orgData) => {
-  const dataToSend = {
-    ...orgData,
-    //client_id: clientId, // Uncomment if your backend expects client_id in the body
+    console.log("Saving organization data:", dataToSend);
+    try {
+      const response = await axios.post(
+        `https://app.webitservices.com/api/organizations/${organization.id}`,
+        dataToSend,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      console.log("Saved organization:", response.data);
+      fetchOrganizations(); // Refresh list after saving
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving organization:", error);
+    }
   };
-console.log("Sending organization data:", dataToSend);
-
-  try {
-    const response = await axios.post(`https://app.webitservices.com/api/${clientId}/organizations`, dataToSend, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    console.log("Saved organization:", response.data);
-    fetchClients(); // Re-fetch organizations after saving
-  } catch (error) {
-    console.error("Error saving organization:", error);
-  }
-};
-
-
-
-
 
   return (
-    <MDBox pt={3}> {/* Adjust padding as needed */}
-      <Tooltip title="Add Client" placement="right">
+    <MDBox pt={3}>
+      {/* Add Organization Button */}
+      <Tooltip title="Add Organization" placement="right">
         <IconButton
           onClick={() => setIsModalOpen(true)}
           color="primary"
           sx={{
             position: "absolute",
             right: "24px",
-            top: "-50px", // Adjust as needed based on your layout
+            top: "-50px",
             backgroundColor: "info.main",
             "&:hover": { backgroundColor: "info.dark" },
           }}
@@ -89,36 +82,46 @@ console.log("Sending organization data:", dataToSend);
           <AddIcon />
         </IconButton>
       </Tooltip>
+
+      {/* Organizations Data Table */}
       <DataTable
         table={{
-          columns: clientColumns,
-          rows: clients.map((client) => ({
-            ...client,
+          columns: orgColumns,
+          rows: organizations.map((org) => ({
+            ...org,
             name: (
               <button
                 onClick={() => {
-                  setSelectedClient(client);
+                  setSelectedOrg(org);
                   setDetailsModalOpen(true);
                 }}
-                style={{ textDecoration: "none", border: "none", background: "none", padding: 0, color: "blue", cursor: "pointer" }}
+                style={{
+                  textDecoration: "none",
+                  border: "none",
+                  background: "none",
+                  padding: 0,
+                  color: "blue",
+                  cursor: "pointer",
+                }}
               >
-                {client.name}
+                {org.name}
               </button>
             ),
           })),
         }}
+        isLoading={loading}
       />
-      {isModalOpen && (
-        <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveOrg} />
-      )}
-      {detailsModalOpen && selectedClient && (
-        <ClientDetailsModal
+
+      {/* Modals */}
+      {isModalOpen && <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveOrg} />}
+      {detailsModalOpen && selectedOrg && (
+        <OrgDetailModal
           open={detailsModalOpen}
           onClose={() => {
             setDetailsModalOpen(false);
-            setSelectedClient(null);
+            setSelectedOrg(null);
           }}
-          client={selectedClient}
+          organization={selectedOrg}
         />
       )}
     </MDBox>

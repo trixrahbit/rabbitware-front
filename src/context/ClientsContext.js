@@ -1,40 +1,43 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { useAuth } from './AuthContext'; // Adjust the import path as necessary
+import React, { createContext, useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { useAuth } from "./AuthContext"; // ✅ Ensure correct import
 
 const ClientsContext = createContext();
 
 export const ClientsProvider = ({ children }) => {
   const [clients, setClients] = useState([]);
-  const [subscription, setSubscription] = useState(null);  // Add subscription state
-  const { authToken, user } = useAuth();
+  const [subscription, setSubscription] = useState(null);
+  const { authToken, organization } = useAuth();  // ✅ Use organization from AuthContext
 
-useEffect(() => {
-  const fetchClients = async () => {
-    try {
-      const response = await axios.get("https://app.webitservices.com/api/get_clients", {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setClients(response.data);
+  useEffect(() => {
+    const fetchClients = async () => {
+      if (!authToken || !organization?.id) return; // ✅ Ensure we have org info
 
-      // Assuming that user has a client_id that you can use to fetch the subscription
-      if (response.data.length > 0) {
-        const clientId = response.data[0].id; // Replace 0 with the appropriate index if multiple clients
-        const subscriptionResponse = await axios.get(`https://app.webitservices.com/api/clients/${clientId}/subscriptions`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+      try {
+        // ✅ Fetch Clients via Organization ID
+        const response = await axios.get(
+          `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        );
+        setClients(response.data);
+
+        // ✅ Fetch Subscription (Assuming each org has a single subscription)
+        const subscriptionResponse = await axios.get(
+          `https://app.webitservices.com/api/organizations/${organization.id}/subscriptions`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        );
         setSubscription(subscriptionResponse.data);
+      } catch (error) {
+        console.error("Error fetching clients or subscription:", error);
       }
-    } catch (error) {
-      console.error("Error fetching clients or subscription:", error);
-    }
-  };
+    };
 
-  if (authToken) {
     fetchClients();
-  }
-}, [authToken]);
-
+  }, [authToken, organization]);
 
   return (
     <ClientsContext.Provider value={{ clients, subscription, setClients }}>
