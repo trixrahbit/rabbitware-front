@@ -1,19 +1,30 @@
 import React, { useState } from "react";
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from "@mui/material";
+import { useAuth } from "../../../../../context/AuthContext"; // ✅ Import useAuth
 
 function AddOrgModal({ open, onClose, onSave }) {
-  const [clientData, setClientData] = useState({
+  const { user } = useAuth(); // ✅ Get user from context
+  const [orgData, setOrgData] = useState({
     name: "",
     domain: "",
     phone: "",
   });
 
   const handleChange = (e) => {
-    setClientData({ ...clientData, [e.target.name]: e.target.value });
+    setOrgData({ ...orgData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
-    onSave(clientData);
+    if (!user?.id) {
+      console.error("❌ Missing `creator_id`!");
+      return;
+    }
+
+    // ✅ Ensure `creator_id` is included
+    const orgPayload = { ...orgData, creator_id: user.id };
+
+    console.log("📢 Submitting organization data:", orgPayload);
+    onSave(orgPayload);
   };
 
   return (
@@ -24,11 +35,11 @@ function AddOrgModal({ open, onClose, onSave }) {
           autoFocus
           margin="dense"
           name="name"
-          label="Name"
+          label="Organization Name"
           type="text"
           fullWidth
           variant="outlined"
-          value={clientData.name}
+          value={orgData.name}
           onChange={handleChange}
         />
         <TextField
@@ -38,7 +49,7 @@ function AddOrgModal({ open, onClose, onSave }) {
           type="text"
           fullWidth
           variant="outlined"
-          value={clientData.domain}
+          value={orgData.domain}
           onChange={handleChange}
         />
         <TextField
@@ -48,7 +59,7 @@ function AddOrgModal({ open, onClose, onSave }) {
           type="text"
           fullWidth
           variant="outlined"
-          value={clientData.phone}
+          value={orgData.phone}
           onChange={handleChange}
         />
       </DialogContent>

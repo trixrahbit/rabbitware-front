@@ -31,35 +31,36 @@ const fetchOrganizations = async () => {
     const response = await axios.get("https://app.webitservices.com/api/organizations", {
       headers: { Authorization: `Bearer ${authToken}` },
     });
-    setClients(response.data);  // Now properly sets organizations
+    setOrganizations(response.data);
+  // Now properly sets organizations
   } catch (error) {
     console.error("Error fetching organizations:", error);
   }
 };
 
 
-  useEffect(() => {
+useEffect(() => {
+  if (authToken) {
     fetchOrganizations();
-  }, [authToken, organization]);
+  }
+}, [authToken]);
 
-  const handleSaveOrg = async (orgData) => {
-    if (!organization?.id) return;
-    const dataToSend = { ...orgData, organization_id: organization.id };
 
-    console.log("Saving organization data:", dataToSend);
-    try {
-      const response = await axios.post(
-        `https://app.webitservices.com/api/organizations/${organization.id}`,
-        dataToSend,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-      console.log("Saved organization:", response.data);
-      fetchOrganizations(); // Refresh list after saving
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error saving organization:", error);
-    }
-  };
+const handleSaveOrg = async (orgData) => {
+  try {
+    const response = await axios.post(
+      `https://app.webitservices.com/api/organizations`, // ✅ Fixed API URL
+      orgData,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    console.log("✅ Organization saved:", response.data);
+    fetchOrganizations(); // ✅ Refresh list
+    setIsModalOpen(false);
+  } catch (error) {
+    console.error("❌ Error saving organization:", error.response?.data || error.message);
+  }
+};
+
 
   return (
     <MDBox pt={3}>
