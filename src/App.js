@@ -29,10 +29,7 @@ export default function App() {
   // ✅ Correctly get filtered routes by calling the function
   const routes = useFilteredRoutes();
 
-  // 🔥 Show a loading screen while auth is being checked
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+
 
   useMemo(() => {
     setRtlCache(createCache({ key: "rtl", stylisPlugins: [rtlPlugin] }));
@@ -46,7 +43,10 @@ export default function App() {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
-
+  // 🔥 Show a loading screen while auth is being checked
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   // ✅ Ensure `allRoutes` is always an array before mapping
   const getRoutes = (allRoutes) => {
     if (!Array.isArray(allRoutes)) {
