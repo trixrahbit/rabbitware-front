@@ -6,7 +6,7 @@ function AddClientModal({ open, onClose, onSave }) {
   const { organization, user } = useAuth();  // ✅ Get organization & user
   const [clientData, setClientData] = useState({
     name: "",
-    email: "",
+    domain: "",  // ✅ Change from email to domain
     phone: "",
   });
 
@@ -48,12 +48,12 @@ function AddClientModal({ open, onClose, onSave }) {
         />
         <TextField
           margin="dense"
-          name="email"
-          label="Email"
-          type="email"
+          name="domain"  // ✅ Change from email to domain
+          label="Domain"
+          type="text"
           fullWidth
           variant="outlined"
-          value={clientData.email}
+          value={clientData.domain}
           onChange={handleChange}
         />
         <TextField
