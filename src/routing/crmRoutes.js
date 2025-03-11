@@ -27,7 +27,7 @@ const crmRoutes = [
         route: "/pages/crm/organizations",
         component: <OrganizationsData />,
         protected: true,
-        requiresSuperAdmin: true, // ✅ Add a custom key to filter later
+        requiresSuperAdmin: true, // ✅ Restrict this route
       },
     ],
   },

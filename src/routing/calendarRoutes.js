@@ -1,20 +1,18 @@
-import React from "react";
+import DashboardLayout from "layouts/pages/calendarbooking/CalendarDashboard";
+import BookingLinkManager from "layouts/pages/calendarbooking/BookingLinkManager";
+import MeetingManagement from "layouts/pages/calendarbooking/MeetingManagement";
+import CalendarBooking from "layouts/pages/booking/CalendarBooking";
+import BrandingSettings from "layouts/pages/calendarbooking/BrandingSettings";
+import NotificationSettings from "layouts/pages/calendarbooking/NotificationSettings";
+import UserProfile from "layouts/pages/calendarbooking/UserProfile";
 import Icon from "@mui/material/Icon";
-
-// Calendar Booking Components
-import DashboardLayout from "../layouts/pages/calendarbooking/CalendarDashboard";
-import MeetingManagement from "../layouts/pages/calendarbooking/MeetingManagement";
-import BrandingSettings from "../layouts/pages/calendarbooking/BrandingSettings";
-import NotificationSettings from "../layouts/pages/calendarbooking/NotificationSettings";
-import UserProfile from "../layouts/pages/calendarbooking/UserProfile";
-import CalendarBooking from "../layouts/pages/booking/CalendarBooking";
 
 const calendarRoutes = [
   {
     type: "collapse",
     name: "Calendar Booking",
     key: "booking",
-    icon: <Icon fontSize="medium">event</Icon>,
+    icon: <Icon fontSize="medium">calendar_today</Icon>,
     collapse: [
       {
         name: "Booking",
@@ -25,8 +23,8 @@ const calendarRoutes = [
         hidden: true,
       },
       {
-        name: "Calendar Booking",
-        key: "booking",
+        name: "Dashboard",
+        key: "dashboard",
         route: "/calendarbooking",
         component: <DashboardLayout />,
         protected: true,
@@ -53,8 +51,8 @@ const calendarRoutes = [
         protected: true,
       },
       {
-        name: "Calendar Profile",
-        key: "calendar-profile",
+        name: "User Profile",
+        key: "user-profile",
         route: "/user-profile",
         component: <UserProfile />,
         protected: true,

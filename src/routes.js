@@ -1,27 +1,18 @@
-import { useAuth } from "context/AuthContext"; // ✅ Get Auth Context
-import crmRoutes from "./routing/crmRoutes";
-import serviceRoutes from "./routing/serviceRoutes";
-import projectRoutes from "./routing/projectRoutes";
-import operationsRoutes from "./routing/operationsRoutes";
-import calendarRoutes from "./routing/calendarRoutes";
-import settingsRoutes from "./routing/settingsRoutes";
+import { useAuth } from "context/AuthContext";
+import crmRoutes from "./crmRoutes";
+import serviceRoutes from "./serviceRoutes";
+import projectRoutes from "./projectRoutes";
+import operationsRoutes from "./operationsRoutes";
+import calendarRoutes from "./calendarRoutes";
+import settingsRoutes from "./settingsRoutes";
 
 const useFilteredRoutes = () => {
-  const { user } = useAuth(); // ✅ Get logged-in user safely
-  const isSuperAdmin = user?.organization?.super_admin === 1; // ✅ Check if the user's org is a super admin
+  const { user } = useAuth();
+  const isSuperAdmin = user?.organization?.super_admin === 1;
 
-  // ✅ Filter CRM routes (only show Organizations for Super Admin)
-  const filteredCrmRoutes = crmRoutes.map((route) => {
-    if (route.key === "clients") {
-      return {
-        ...route,
-        collapse: route.collapse.filter(
-          (subRoute) => subRoute.key !== "organizations" || isSuperAdmin
-        ),
-      };
-    }
-    return route;
-  });
+  const filteredCrmRoutes = crmRoutes.filter(
+    (route) => !route.requiresSuperAdmin || isSuperAdmin
+  );
 
   return [
     ...filteredCrmRoutes,

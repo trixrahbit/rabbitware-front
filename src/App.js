@@ -7,9 +7,7 @@ import MDBox from "components/MDBox";
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
 import theme from "assets/theme";
-import themeRTL from "assets/theme/theme-rtl";
 import themeDark from "assets/theme-dark";
-import themeDarkRTL from "assets/theme-dark/theme-rtl";
 import rtlPlugin from "stylis-plugin-rtl";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -21,34 +19,19 @@ import brandDark from "assets/images/logo-ct-dark.png";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider, useAuth } from "context/AuthContext";
 import Basic from "./layouts/authentication/sign-in/basic";
-import ProfileSettingsPage from "./layouts/pages/profile/profile-settings";
 import { ClientsProvider } from 'context/ClientsContext';
-import ProjectEditor from "./layouts/pages/projects/components/ProjectEditor";
-import DetailsPage from "./layouts/pages/projects/projectmanagement/components/DetailsPage";
-import ChecklistViewer from "./layouts/pages/checklists/components/ChecklistViewer";
-import FormBuilder from "./layouts/pages/formbuilder/components/FormBuilder";
 import FormListPage from "./layouts/pages/formbuilder";
-import IntegrationPage from "./layouts/pages/settings/integrations";
-import CalendarBooking from "./layouts/pages/booking/CalendarBooking";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
-  const { authToken, user, authOverride } = useAuth();
+  const { authToken, authOverride } = useAuth();
   const isAuthenticated = !!authToken;
-  const {
-    miniSidenav,
-    direction,
-    layout,
-    openConfigurator,
-    sidenavColor,
-    transparentSidenav,
-    whiteSidenav,
-    darkMode,
-  } = controller;
+  const { miniSidenav, direction, layout, openConfigurator, sidenavColor, transparentSidenav, whiteSidenav, darkMode } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
 
+  // Create RTL Cache only once
   useMemo(() => {
     const cacheRtl = createCache({
       key: "rtl",
@@ -82,38 +65,33 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-const getRoutes = (allRoutes) => {
-  if (!Array.isArray(allRoutes)) {
-    console.error("🚨 Expected an array of routes but got:", allRoutes);
-    return null; // Return nothing if the data isn't iterable
-  }
-
-  return allRoutes.map((route) => {
-    if (route.collapse) {
-      return getRoutes(route.collapse);
+  const getRoutes = (allRoutes) => {
+    if (!Array.isArray(allRoutes)) {
+      console.error("🚨 Expected an array of routes but got:", allRoutes);
+      return null;
     }
 
-    if (route.route) {
-      return (
-        <Route
-          key={route.key}
-          path={route.route}
-          element={
-            route.protected ? (
-              <ProtectedRoute>
-                {route.component}
-              </ProtectedRoute>
-            ) : (
-              route.component
-            )
-          }
-        />
-      );
-    }
-    return null;
-  });
-};
+    return allRoutes.map((route) => {
+      if (route.collapse) return getRoutes(route.collapse);
 
+      if (route.route) {
+        return (
+          <Route
+            key={route.key}
+            path={route.route}
+            element={
+              route.protected ? (
+                <ProtectedRoute>{route.component}</ProtectedRoute>
+              ) : (
+                route.component
+              )
+            }
+          />
+        );
+      }
+      return null;
+    });
+  };
 
   const configsButton = (
     <MDBox
@@ -158,10 +136,10 @@ const getRoutes = (allRoutes) => {
             </>
           )}
           <Routes>
-              {getRoutes(Array.isArray(routes) ? routes : [])}
-              {getRoutes(Array.isArray(pageRoutes) ? pageRoutes : [])}
+            {getRoutes(routes)}
+            {getRoutes(pageRoutes)}
             <Route path="/login" element={<Basic />} />
-            <Route path="/" element={isAuthenticated || authOverride ? <FormListPage /> : <Navigate to={"/login"} replace />} />
+            <Route path="/" element={isAuthenticated || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
           </Routes>
           {layout === "dashboard" && !pathname.startsWith("/booking") && configsButton}
