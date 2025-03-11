@@ -18,13 +18,18 @@ const handleSubmit = async () => {
     return;
   }
 
-  // Ensure the organization ID is attached
-  const clientPayload = { ...clientData, organization_id: organization?.id };
+  // Ensure creator_id and organization_id are attached
+  const clientPayload = {
+    ...clientData,
+    organization_id: organization?.id,
+    creator_id: user?.id  // ✅ Include creator_id
+  };
 
   console.log("📢 Submitting client data:", clientPayload);
 
   onSave(clientPayload);
 };
+
 
 
   return (

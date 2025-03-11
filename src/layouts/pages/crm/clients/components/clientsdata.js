@@ -65,27 +65,35 @@ useEffect(() => {
   };
 
 const handleSaveClient = async (clientData) => {
-  console.log("🚀 Sending Client Data:", clientData);  // ✅ Debugging output
-
-  if (!clientData.organization_id) {
-    console.error("❌ Organization ID is missing!");
+  if (!organization?.id || !user?.id) {
+    console.error("❌ Missing organization_id or creator_id!");
     return;
   }
 
+  // Attach organization_id and creator_id to the payload
+  const clientPayload = {
+    ...clientData,
+    organization_id: organization.id,
+    creator_id: user.id  // ✅ Ensure creator_id is included
+  };
+
+  console.log("📢 Submitting client data:", clientPayload);
+
   try {
     const response = await axios.post(
-      `https://app.webitservices.com/api/organizations/${clientData.organization_id}/clients`,
-      clientData,
+      `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+      clientPayload,
       { headers: { Authorization: `Bearer ${authToken}` } }
     );
 
     console.log("✅ Client saved successfully:", response.data);
-    fetchClients(); // Refresh list
+    fetchClients(); // Refresh the client list
     handleCloseModal();
   } catch (error) {
     console.error("❌ Error adding client:", error.response?.data || error.message);
   }
 };
+
 
 
 
