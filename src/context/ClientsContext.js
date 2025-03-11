@@ -7,19 +7,19 @@ const ClientsContext = createContext();
 export const ClientsProvider = ({ children }) => {
   const [clients, setClients] = useState([]);
   const [subscription, setSubscription] = useState(null);
-  const { authToken, organization } = useAuth();
+  const { authToken, user } = useAuth();
 
   useEffect(() => {
-    if (!authToken || !organization?.id) {
+    if (!authToken || !user?.organization?.id) {
       console.warn("⚠️ Missing authToken or organization.id, skipping API call.");
       return;
     }
 
     const fetchClients = async () => {
       try {
-        console.log(`📡 Fetching clients for Org ID: ${organization.id}`);
+        console.log(`📡 Fetching clients for Org ID: ${user.organization.id}`);
         const response = await axios.get(
-          `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+          `https://app.webitservices.com/api/organizations/${user.organization.id}/clients`,
           { headers: { Authorization: `Bearer ${authToken}` } }
         );
         console.log("✅ Clients fetched:", response.data);
@@ -30,7 +30,7 @@ export const ClientsProvider = ({ children }) => {
     };
 
     fetchClients();
-  }, [authToken, organization]);
+  }, [authToken, user?.organization?.id]);
 
   return (
     <ClientsContext.Provider value={{ clients, subscription, setClients }}>

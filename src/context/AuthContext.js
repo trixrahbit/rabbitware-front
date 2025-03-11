@@ -37,18 +37,24 @@ export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
   const [navigateFunction, setNavigateFunction] = useState(null);
 
+  useEffect(() => {
+    console.log("🔍 Auth Token:", state.authToken);
+    console.log("🔍 User Data:", state.user);
+    console.log("🔍 Organization ID:", state.user?.organization?.id);
+  }, [state]);
+
   const setNavigate = (navigate) => {
     setNavigateFunction(() => navigate);
   };
 
   const login = (authToken, user, navigate) => {
-    console.log("Logging in user:", user);
+    console.log("🔓 Logging in user:", user);
     setNavigate(navigate);
     dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user } });
   };
 
   const logout = () => {
-    console.log("Logging out...");
+    console.log("🔐 Logging out...");
     sessionStorage.clear();
     dispatch({ type: authActionTypes.LOGOUT });
     if (navigateFunction) {
