@@ -64,22 +64,6 @@ const handleSaveOrg = async (orgData) => {
 
   return (
     <MDBox pt={3}>
-      {/* Add Organization Button */}
-      <Tooltip title="Add Organization" placement="right">
-        <IconButton
-          onClick={() => setIsModalOpen(true)}
-          color="primary"
-          sx={{
-            position: "absolute",
-            right: "24px",
-            top: "-50px",
-            backgroundColor: "info.main",
-            "&:hover": { backgroundColor: "info.dark" },
-          }}
-        >
-          <AddIcon />
-        </IconButton>
-      </Tooltip>
 
       {/* Organizations Data Table */}
       <DataTable
