@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-// Material Dashboard 2 PRO React components and layout
+// Material Dashboard 2 PRO components and layout
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
@@ -31,8 +31,8 @@ const OrganizationsPage = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
+        {/* 📊 Statistics Section */}
         <Grid container spacing={3}>
-          {/* Statistics Cards */}
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
               <OrgCountCard />
@@ -73,33 +73,45 @@ const OrganizationsPage = () => {
           </Grid>
         </Grid>
 
-        {/* Organizations Table with Add Button */}
+        {/* 🏢 Organizations Management */}
         <MDBox pt={4} pb={2} position="relative">
-          <Card sx={{ p: 3, boxShadow: 3 }}>
+          <Card sx={{ p: 4, boxShadow: 6, borderRadius: 3 }}>
             <Grid container justifyContent="space-between" alignItems="center" mb={2}>
               <Grid item>
-                <MDTypography variant="h4" fontWeight="medium">
-                  Organizations
+                <MDTypography variant="h4" fontWeight="bold" color="textPrimary">
+                  🏢 Organizations
                 </MDTypography>
-                <MDTypography variant="body2" color="secondary">
-                  Overview and management of your organizations.
+                <MDTypography variant="body2" color="textSecondary">
+                  Manage all organizations from here.
                 </MDTypography>
               </Grid>
               <Grid item>
                 <Tooltip title="Add Organization">
-                  <MDButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
-                    Add Organization
+                  <MDButton
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenModal}
+                    sx={{
+                      fontSize: "15px",
+                      fontWeight: "bold",
+                      padding: "10px 20px",
+                      backgroundColor: "#4A90E2",
+                      "&:hover": { backgroundColor: "#3A7BC2" },
+                    }}
+                  >
+                    + Add Organization
                   </MDButton>
                 </Tooltip>
               </Grid>
             </Grid>
-            {/* Organizations Data Table */}
+            {/* 📋 Organizations Table */}
             <OrganizationsData />
           </Card>
         </MDBox>
       </MDBox>
 
-      {/* Add Organization Modal */}
+      {/* ➕ Add Organization Modal */}
       {isModalOpen && <AddOrgModal open={isModalOpen} onClose={handleCloseModal} />}
 
       <Footer />
