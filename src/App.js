@@ -11,13 +11,13 @@ import themeDark from "assets/theme-dark";
 import rtlPlugin from "stylis-plugin-rtl";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
-import useFilteredRoutes from "routing/useFilteredRoutes"; // ✅ Import correct route hook
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider, useAuth } from "context/AuthContext";
 import Basic from "./layouts/authentication/sign-in/basic";
 import FormListPage from "./layouts/pages/formbuilder";
-import pageRoutes from "page.routes"; // Ensure this is an array
+import pageRoutes from "page.routes";
+import useFilteredRoutes from "./routes"; // Ensure this is an array
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
