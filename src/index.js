@@ -6,19 +6,19 @@ import { AuthProvider } from "context/AuthContext";
 import { MaterialUIControllerProvider } from "context";
 import { ClientsProvider } from "./context/ClientsContext";
 
-const container = document.getElementById("root");
+const container = document.getElementById('root');
 const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <AuthProvider> {/* ✅ AuthProvider should be wrapped at the highest level */}
-      <ClientsProvider>
-        <MaterialUIControllerProvider>
-          <BrowserRouter>
+    <BrowserRouter> {/* ✅ Ensure this is outside all providers */}
+      <AuthProvider>
+        <ClientsProvider>
+          <MaterialUIControllerProvider>
             <App />
-          </BrowserRouter>
-        </MaterialUIControllerProvider>
-      </ClientsProvider>
-    </AuthProvider>
+          </MaterialUIControllerProvider>
+        </ClientsProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );
