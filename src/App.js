@@ -82,31 +82,38 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  const getRoutes = (allRoutes) => allRoutes.map((route) => {
+const getRoutes = (allRoutes) => {
+  if (!Array.isArray(allRoutes)) {
+    console.error("🚨 Expected an array of routes but got:", allRoutes);
+    return null; // Return nothing if the data isn't iterable
+  }
+
+  return allRoutes.map((route) => {
     if (route.collapse) {
       return getRoutes(route.collapse);
     }
 
     if (route.route) {
-      if (route.protected) {
-        return (
-          <Route
-            key={route.key}
-            path={route.route}
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated || authOverride}>
+      return (
+        <Route
+          key={route.key}
+          path={route.route}
+          element={
+            route.protected ? (
+              <ProtectedRoute>
                 {route.component}
               </ProtectedRoute>
-            }
-          />
-        );
-      } else {
-        return <Route key={route.key} path={route.route} element={route.component} />;
-      }
+            ) : (
+              route.component
+            )
+          }
+        />
+      );
     }
-
     return null;
   });
+};
+
 
   const configsButton = (
     <MDBox
@@ -151,7 +158,8 @@ export default function App() {
             </>
           )}
           <Routes>
-            {getRoutes([...routes, ...pageRoutes])}
+              {getRoutes(Array.isArray(routes) ? routes : [])}
+              {getRoutes(Array.isArray(pageRoutes) ? pageRoutes : [])}
             <Route path="/login" element={<Basic />} />
             <Route path="/" element={isAuthenticated || authOverride ? <FormListPage /> : <Navigate to={"/login"} replace />} />
             <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
