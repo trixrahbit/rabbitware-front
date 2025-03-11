@@ -28,23 +28,28 @@ const ClientsData = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      if (!organization?.id) return; // Ensure org is available
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
-          { headers: { Authorization: `Bearer ${authToken}` } }
-        );
-        setClients(response.data);
-      } catch (error) {
-        console.error("Error fetching clients:", error);
-      }
-      setLoading(false);
-    };
-    fetchClients();
-  }, [setClients, authToken, organization]);
+const fetchClients = async () => {
+  if (!organization?.id) return; // Ensure org is available
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    setClients(response.data);
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+  }
+  setLoading(false);
+};
+
+// ✅ Call `fetchClients` inside useEffect
+useEffect(() => {
+  fetchClients();
+}, [setClients, authToken, organization]);
+
+
+
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -60,7 +65,7 @@ const ClientsData = () => {
   };
 
 const handleSaveClient = async (clientData) => {
-  console.log("🚀 Sending Client Data:", clientData);  // ✅ Debugging output
+  console.log("🚀 Sending Client Data:", clientData);
 
   if (!clientData.organization_id) {
     console.error("❌ Organization ID is missing!");
@@ -75,12 +80,13 @@ const handleSaveClient = async (clientData) => {
     );
 
     console.log("✅ Client saved successfully:", response.data);
-    fetchClients(); // Refresh list
+    fetchClients(); // ✅ Now it's correctly defined and reusable
     handleCloseModal();
   } catch (error) {
     console.error("❌ Error adding client:", error.response?.data || error.message);
   }
 };
+
 
 
   // Filter clients based on search query

@@ -8,6 +8,7 @@ import Tooltip from "@mui/material/Tooltip";
 import AddIcon from "@mui/icons-material/Add";
 import AddOrgModal from "./AddOrgModal";
 import OrgDetailModal from "./OrgDetailModal";
+import {useClients} from "../../../../../context/ClientsContext";
 
 const orgColumns = [
   { Header: "Name", accessor: "name", width: "30%" },
@@ -22,6 +23,7 @@ const OrganizationsData = ({ onStatsFetched }) => {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { clients, setClients } = useClients(); // ✅ Ensure useClients is imported properly
 
   // Fetch organizations
 const fetchOrganizations = async () => {
