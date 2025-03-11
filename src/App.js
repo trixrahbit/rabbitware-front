@@ -86,36 +86,22 @@ export default function App() {
         <CssBaseline />
         {controller.layout === "dashboard" && (
           <>
-            <Sidenav
-              color={controller.sidenavColor}
-              brandName="RabbitAI"
-              routes={routes}
-            />
+            <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
             <Configurator />
           </>
         )}
-<Routes>
-  {/* ✅ Show a Loading Screen Until Auth is Ready */}
-  {isLoading ? (
-    <Route path="*" element={<div>Loading...</div>} />
-  ) : (
-    <>
-      {/* ✅ Render Routes Dynamically */}
-      {Array.isArray(routes) && getRoutes(routes)}
-      {Array.isArray(pageRoutes) && getRoutes(pageRoutes)}
-
-      {/* ✅ Public Login Route */}
-      <Route path="/login" element={<Basic />} />
-
-      {/* ✅ Default Route - Redirect to Dashboard if Authenticated, Else Login */}
-      <Route path="/" element={isAuthenticated || authOverride ? <Navigate to="/dashboards/analytics" replace /> : <Navigate to="/login" replace />} />
-
-      {/* ✅ Catch-All Route */}
-      <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
-    </>
-  )}
-</Routes>
-
+        <Routes>
+          {routes.map((route) => (
+            <Route
+              key={route.key}
+              path={route.route}
+              element={route.protected ? <ProtectedRoute>{route.component}</ProtectedRoute> : route.component}
+            />
+          ))}
+          <Route path="/login" element={<Basic />} />
+          <Route path="/" element={isAuthenticated ? <FormListPage /> : <Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboards/analytics" : "/login"} replace />} />
+        </Routes>
       </ThemeProvider>
     </AuthProvider>
   );

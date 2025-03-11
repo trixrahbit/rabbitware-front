@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { createContext, useContext, useReducer, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-// 🔹 Securely Parse Data from Local Storage
+// ✅ Safe Parsing of Local Storage Data
 const safeParse = (key, defaultValue = null) => {
   try {
     const value = localStorage.getItem(key);
@@ -12,85 +12,62 @@ const safeParse = (key, defaultValue = null) => {
   }
 };
 
-// ✅ Define Initial Authentication State
-const getInitialAuthState = () => ({
-  authToken: sessionStorage.getItem("authToken") || null, // 🔒 Use sessionStorage for security
-  user: safeParse("user", {}),
-  organization: safeParse("organization", {}),
+// ✅ Initial State
+const initialAuthState = {
+  authToken: localStorage.getItem("authToken") || null,
+  user: safeParse("user"),
+  organization: safeParse("organization"),
   authOverride: false,
-  isLoading: true, // ✅ Prevents race conditions
-});
-
-// 🔹 Define Auth Actions
-const authActionTypes = {
-  SET_AUTH_TOKEN: "SET_AUTH_TOKEN",
-  LOGOUT: "LOGOUT",
-  SET_USER: "SET_USER",
-  SET_ORGANIZATION: "SET_ORGANIZATION",
-  SET_LOADING: "SET_LOADING",
+  isLoading: true, // 🔹 Added to prevent unnecessary redirects before loading state
 };
 
-// 🔥 Reducer Function for Auth
+// ✅ Reducer Actions
+const authActionTypes = {
+  SET_AUTH_TOKEN: "SET_AUTH_TOKEN",
+  SET_USER: "SET_USER",
+  SET_ORGANIZATION: "SET_ORGANIZATION",
+  LOGOUT: "LOGOUT",
+};
+
+// ✅ Reducer Function
 const authReducer = (state, action) => {
   switch (action.type) {
     case authActionTypes.SET_AUTH_TOKEN:
-      return { ...state, authToken: action.payload, isLoading: false };
-
+      return { ...state, authToken: action.payload };
     case authActionTypes.SET_USER:
       return { ...state, user: action.payload };
-
     case authActionTypes.SET_ORGANIZATION:
       return { ...state, organization: action.payload };
-
-    case authActionTypes.SET_LOADING:
-      return { ...state, isLoading: false };
-
     case authActionTypes.LOGOUT:
-      sessionStorage.clear();
-      localStorage.removeItem("user");
-      localStorage.removeItem("organization");
-      return { authToken: null, user: {}, organization: {}, isLoading: false };
-
+      localStorage.clear();
+      return { authToken: null, user: null, organization: null, isLoading: false };
     default:
-      console.warn(`🚨 Unknown action type: ${action.type}`);
       return state;
   }
 };
 
-// 🔹 Create Auth Context
+// ✅ Context
 const AuthContext = createContext();
 
-// 🔥 AuthProvider Component
+// ✅ Provider
 const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, undefined, getInitialAuthState);
-  const navigate = useNavigate(); // ✅ Ensure React Router is initialized
-  const location = useLocation(); // ✅ Get current page URL
+  const [state, dispatch] = useReducer(authReducer, initialAuthState);
+  const navigate = useNavigate(); // ✅ Ensure useNavigate() is not inside a hook
 
-  // ✅ Initialize Authentication State on Load
+  // 🔹 Set Initial Loading State
   useEffect(() => {
-    const token = sessionStorage.getItem("authToken");
-    const user = safeParse("user", {});
-    const organization = safeParse("organization", {});
-
-    if (token) {
-      dispatch({ type: authActionTypes.SET_AUTH_TOKEN, payload: token });
-      dispatch({ type: authActionTypes.SET_USER, payload: user });
-      dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
+    if (state.authToken) {
+      dispatch({ type: "SET_USER", payload: safeParse("user") });
+      dispatch({ type: "SET_ORGANIZATION", payload: safeParse("organization") });
     }
-
-    dispatch({ type: authActionTypes.SET_LOADING });
+    dispatch({ type: "SET_LOADING", payload: false });
   }, []);
 
-  // ✅ Login Function (Safe Navigation)
-  const login = useCallback((token, user) => {
-    if (!token || !user) {
-      console.warn("🚨 Missing token or user in login!");
-      return;
-    }
+  // ✅ Login Function
+  const login = (token, user) => {
+    const organization = user.organization;
 
-    const organization = user.organization || {};
-
-    sessionStorage.setItem("authToken", token);
+    localStorage.setItem("authToken", token);
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("organization", JSON.stringify(organization));
 
@@ -98,46 +75,33 @@ const AuthProvider = ({ children }) => {
     dispatch({ type: authActionTypes.SET_USER, payload: user });
     dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
 
-    // ✅ Redirect after login
-    setTimeout(() => {
-      if (location.pathname === "/login") {
-        navigate("/dashboards/analytics", { replace: true });
-      }
-    }, 300);
-  }, [navigate, location]);
+    navigate("/dashboard"); // ✅ Redirect after login
+  };
 
-  // ✅ Logout Function (Safe Cleanup)
-  const logout = useCallback(() => {
-    sessionStorage.clear();
-    localStorage.removeItem("user");
-    localStorage.removeItem("organization");
-
+  // ✅ Logout Function
+  const logout = () => {
+    localStorage.clear();
     dispatch({ type: authActionTypes.LOGOUT });
-
-    // ✅ Ensure logout redirect happens AFTER state updates
-    setTimeout(() => {
-      navigate("/login", { replace: true });
-    }, 300);
-  }, [navigate]);
+    navigate("/login", { replace: true }); // ✅ Prevent history back
+  };
 
   // ✅ Memoized Context Value
   const authContextValue = useMemo(() => ({
     ...state,
     login,
     logout,
-  }), [state, login, logout]);
+  }), [state]);
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };
 
-// ✅ Hook for Using Auth
+// ✅ Custom Hook
 const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("🚨 useAuth must be used within an AuthProvider");
+    throw new Error("❌ useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-// ✅ Exports
-export { AuthProvider, useAuth, authActionTypes };
+export { AuthProvider, useAuth };
