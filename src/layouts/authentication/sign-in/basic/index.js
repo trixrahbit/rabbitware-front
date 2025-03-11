@@ -1,9 +1,6 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
-
-import { Divider } from "@mui/material";
-// react-router-dom components
+import { useNavigate } from "react-router-dom";
+import { Divider, CircularProgress } from "@mui/material"; // ✅ Add loader
 import { Link } from "react-router-dom";
 
 // @mui material components
@@ -25,54 +22,60 @@ import MDButton from "components/MDButton";
 
 // Authentication layout components
 import BasicLayout from "layouts/authentication/components/BasicLayout";
-
-// Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
-import {useAuth} from "../../../../context/AuthContext";
+import { useAuth } from "../../../../context/AuthContext";
 
 function Basic() {
-  const [email, setEmail] = useState(""); // Add state for email
-  const [password, setPassword] = useState(""); // Add state for password
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const { login } = useAuth(); // Destructure the login method from your context
+  const [loading, setLoading] = useState(false); // ✅ Track loading state
+  const [error, setError] = useState(""); // ✅ Track error messages
+  const { login } = useAuth();
   const navigate = useNavigate();
+
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(""); // ✅ Reset errors before new request
 
-  try {
-    const response = await fetch("https://app.webitservices.com/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
-    });
+    try {
+      const response = await fetch("https://app.webitservices.com/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // ✅ Fix incorrect Content-Type
+        },
+        body: JSON.stringify({ username: email, password }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Login failed");
+      if (!response.ok) {
+        throw new Error("Invalid credentials or server error");
+      }
+
+      const data = await response.json();
+
+      if (data.access_token && data.user) {
+        login(data.access_token, data.user);
+
+        // ✅ Store in sessionStorage for better security
+        sessionStorage.setItem("authToken", data.access_token);
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+
+        navigate("/dashboards/analytics", { replace: true }); // ✅ Ensure replace
+      } else {
+        throw new Error("Missing authentication token or user data");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const data = await response.json(); // Make sure this line correctly parses the JSON response
-
-    if (data.access_token && data.user) {
-      console.log("Login successful", data);
-      // Now, use your context's login function, assuming it can handle both token and user info
-      login(data.access_token, data.user); // Make sure your login function accepts both token and user
-
-      navigate("/dashboards/analytics"); // Navigate to dashboard or desired route
-    } else {
-      console.error("Token or user information is missing in response");
-      // Handle the missing token/user information error
-    }
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Login failed. Please try again.");
-  }
-};
-
- return (
+  return (
     <BasicLayout image={bgImage}>
       <Card>
         <MDBox
@@ -107,15 +110,31 @@ const handleSubmit = async (e) => {
             </Grid>
           </Grid>
         </MDBox>
+
         <MDBox pt={4} pb={3} px={3}>
-          <Divider>Hello</Divider>
-          <MDBox component="form" role="form" onSubmit={handleSubmit}> {/* Add onSubmit handler */}
+          <Divider>Welcome Back</Divider>
+          <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
-              <MDInput type="email" label="Email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} />
+              <MDInput
+                type="email"
+                label="Email"
+                fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required // ✅ Add required attribute
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="password" label="Password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} />
+              <MDInput
+                type="password"
+                label="Password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </MDBox>
+
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Switch checked={rememberMe} onChange={handleSetRememberMe} />
               <MDTypography
@@ -127,13 +146,22 @@ const handleSubmit = async (e) => {
               >
                 &nbsp;&nbsp;Remember me
               </MDTypography>
-
             </MDBox>
+
+            {error && (
+              <MDBox mt={2} textAlign="center">
+                <MDTypography variant="caption" color="error">
+                  {error}
+                </MDTypography>
+              </MDBox>
+            )}
+
             <MDBox mt={4} mb={1}>
-              <MDButton type="submit" variant="gradient" color="info" fullWidth>
-                sign in
+              <MDButton type="submit" variant="gradient" color="info" fullWidth disabled={loading}>
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Sign in"} {/* ✅ Loading UI */}
               </MDButton>
             </MDBox>
+
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
                 Don&apos;t have an account?{" "}
