@@ -1,11 +1,7 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ Ensures proper routing
-import { createBrowserHistory } from "history"; // ✅ Ensure custom history is correctly imported
+import React, { createContext, useContext, useReducer, useMemo, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ Ensure React Router is available
 
-// ✅ Custom history instance (if used)
-const history = createBrowserHistory();
-
-// ✅ Secure Storage Utility
+// 🔹 Secure Local Storage Handling
 const safeParse = (key, defaultValue = null) => {
   try {
     const value = localStorage.getItem(key);
@@ -16,25 +12,25 @@ const safeParse = (key, defaultValue = null) => {
   }
 };
 
-// ✅ Lazy Initial State
+// ✅ Lazy Initialize Authentication State
 const getInitialAuthState = () => ({
   authToken: sessionStorage.getItem("authToken") || null, // 🔒 Use sessionStorage for security
   user: safeParse("user", {}),
   organization: safeParse("organization", {}),
   authOverride: false,
-  isLoading: true, // ✅ Prevent premature redirects
+  isLoading: true, // ✅ Ensure proper loading behavior
 });
 
-// ✅ Action Types
+// 🔹 Auth Reducer for Immutable State Management
 const authActionTypes = {
   SET_AUTH_TOKEN: "SET_AUTH_TOKEN",
   LOGOUT: "LOGOUT",
   SET_USER: "SET_USER",
   SET_ORGANIZATION: "SET_ORGANIZATION",
-  SET_LOADING: "SET_LOADING",
+  SET_LOADING: "SET_LOADING", // ✅ Marks loading as complete
 };
 
-// ✅ Auth Reducer
+// 🔥 Auth Reducer Function
 const authReducer = (state, action) => {
   switch (action.type) {
     case authActionTypes.SET_AUTH_TOKEN:
@@ -46,7 +42,7 @@ const authReducer = (state, action) => {
     case authActionTypes.SET_ORGANIZATION:
       return { ...state, organization: action.payload };
 
-    case authActionTypes.SET_LOADING: // ✅ NEW: Mark loading as complete
+    case authActionTypes.SET_LOADING:
       return { ...state, isLoading: false };
 
     case authActionTypes.LOGOUT:
@@ -61,17 +57,17 @@ const authReducer = (state, action) => {
   }
 };
 
-// ✅ Auth Context
+// 🔹 Auth Context
 const AuthContext = createContext();
 
-// ✅ Auth Provider
+// 🔥 Auth Provider Component
 const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, undefined, getInitialAuthState);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate(); // ✅ Use only inside `useEffect`
+  const location = useLocation(); // ✅ Track current page
 
+  // ✅ Initialize Authentication State on First Load
   useEffect(() => {
-    // ✅ Ensure auth state is properly loaded before navigating
     const token = sessionStorage.getItem("authToken");
     const user = safeParse("user", {});
     const organization = safeParse("organization", {});
@@ -82,7 +78,7 @@ const AuthProvider = ({ children }) => {
       dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
     }
 
-    dispatch({ type: authActionTypes.SET_LOADING }); // ✅ Mark loading complete
+    dispatch({ type: authActionTypes.SET_LOADING });
   }, []);
 
   // ✅ Secure Login Function
@@ -102,10 +98,12 @@ const AuthProvider = ({ children }) => {
     dispatch({ type: authActionTypes.SET_USER, payload: user });
     dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
 
-    // ✅ Redirect only if not already on the dashboard
-    if (location.pathname !== "/dashboards/analytics") {
-      navigate("/dashboards/analytics");
-    }
+    // ✅ Redirect only after loading completes
+    setTimeout(() => {
+      if (location.pathname !== "/dashboards/analytics") {
+        navigate("/dashboards/analytics", { replace: true });
+      }
+    }, 500);
   }, [navigate, location]);
 
   // ✅ Secure Logout Function
@@ -116,13 +114,15 @@ const AuthProvider = ({ children }) => {
 
     dispatch({ type: authActionTypes.LOGOUT });
 
-    // ✅ Redirect only if not already on login page
-    if (location.pathname !== "/login") {
-      navigate("/login");
-    }
+    // ✅ Ensure logout redirect happens **AFTER** state updates
+    setTimeout(() => {
+      if (location.pathname !== "/login") {
+        navigate("/login", { replace: true });
+      }
+    }, 500);
   }, [navigate, location]);
 
-  // ✅ Memoized Context Value for Performance
+  // ✅ Memoized Context for Performance
   const authContextValue = useMemo(
     () => ({ ...state, login, logout }),
     [state, login, logout]
@@ -131,7 +131,7 @@ const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };
 
-// ✅ Custom Hook for Using Auth
+// ✅ Hook for Using Auth
 const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
