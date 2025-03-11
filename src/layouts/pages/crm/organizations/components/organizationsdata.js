@@ -24,22 +24,17 @@ const OrganizationsData = ({ onStatsFetched }) => {
   const [loading, setLoading] = useState(true);
 
   // Fetch organizations
-  const fetchOrganizations = async () => {
-    if (!organization?.id) return; // Ensure org is available
-    setLoading(true);
-    console.log(`Fetching organizations for orgId: ${organization.id} with authToken: ${authToken}`);
-    try {
-      const response = await axios.get(
-        `https://app.webitservices.com/api/organizations/${organization.id}`,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-      console.log("Fetched organizations:", response.data);
-      setOrganizations(response.data);
-    } catch (error) {
-      console.error("Error fetching organizations:", error);
-    }
-    setLoading(false);
-  };
+const fetchOrganizations = async () => {
+  try {
+    const response = await axios.get("https://app.webitservices.com/api/organizations", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    setClients(response.data);  // Now properly sets organizations
+  } catch (error) {
+    console.error("Error fetching organizations:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchOrganizations();

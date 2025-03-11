@@ -59,19 +59,29 @@ const ClientsData = () => {
     setSelectedClient(null);
   };
 
-  const handleSaveClient = async (clientData) => {
-    const completeClientData = { ...clientData, organization_id: organization?.id };
-    try {
-      await axios.post(
-        `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
-        completeClientData,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error adding client:", error);
-    }
-  };
+const handleSaveClient = async (clientData) => {
+  console.log("🚀 Sending Client Data:", clientData);  // ✅ Debugging output
+
+  if (!clientData.organization_id) {
+    console.error("❌ Organization ID is missing!");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `https://app.webitservices.com/api/organizations/${clientData.organization_id}/clients`,
+      clientData,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+
+    console.log("✅ Client saved successfully:", response.data);
+    fetchClients(); // Refresh list
+    handleCloseModal();
+  } catch (error) {
+    console.error("❌ Error adding client:", error.response?.data || error.message);
+  }
+};
+
 
   // Filter clients based on search query
   const filteredClients = clients.filter(client =>
