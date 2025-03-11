@@ -11,14 +11,14 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ClientsProvider>
-          <MaterialUIControllerProvider>
+    <AuthProvider> {/* ✅ AuthProvider should be wrapped at the highest level */}
+      <ClientsProvider>
+        <MaterialUIControllerProvider>
+          <BrowserRouter>
             <App />
-          </MaterialUIControllerProvider>
-        </ClientsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+          </BrowserRouter>
+        </MaterialUIControllerProvider>
+      </ClientsProvider>
+    </AuthProvider>
   </React.StrictMode>
 );

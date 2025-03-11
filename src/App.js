@@ -1,33 +1,34 @@
-import { useState, useEffect, useMemo } from "react";
-import {BrowserRouter,  Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Icon from "@mui/material/Icon";
-import MDBox from "components/MDBox";
+import createCache from "@emotion/cache";
+import { CacheProvider } from "@emotion/react";
+import rtlPlugin from "stylis-plugin-rtl";
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
 import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
-import rtlPlugin from "stylis-plugin-rtl";
-import { CacheProvider } from "@emotion/react";
-import createCache from "@emotion/cache";
-import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
+import { useMaterialUIController } from "context";
 import ProtectedRoute from "./ProtectedRoute";
-import { AuthProvider, useAuth } from "context/AuthContext";
+import { useAuth } from "context/AuthContext";
 import Basic from "./layouts/authentication/sign-in/basic";
 import FormListPage from "./layouts/pages/formbuilder";
-import pageRoutes from "page.routes";
-import useFilteredRoutes from "./routes"; // Ensure this is an array
+import useFilteredRoutes from "./routes";
+import LoadingScreen from "components/LoadingScreen";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
-  const { authToken, authOverride, isLoading, login, logout } = useAuth();
-  const isAuthenticated = !!authToken;
+  const { authToken, authOverride, setNavigate } = useAuth();
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
-  const navigate = useNavigate(); // ✅ Now inside Router context
+  const navigate = useNavigate();
+  const routes = useFilteredRoutes();
 
-
+  // Pass navigate function to AuthContext so it can be used inside `AuthProvider`
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate, setNavigate]);
 
   useMemo(() => {
     setRtlCache(createCache({ key: "rtl", stylisPlugins: [rtlPlugin] }));
@@ -41,16 +42,7 @@ export default function App() {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
-  const routes = useFilteredRoutes() || [];
 
-  // 🔥 Show a loading screen while auth is being checked
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-
-
-  // ✅ Ensure `allRoutes` is always an array before mapping
   const getRoutes = (allRoutes) => {
     if (!Array.isArray(allRoutes)) {
       console.error("🚨 Expected an array of routes but got:", allRoutes);
@@ -69,9 +61,7 @@ export default function App() {
             path={route.route}
             element={
               route.protected ? (
-                <ProtectedRoute>
-                  {route.component}
-                </ProtectedRoute>
+                <ProtectedRoute>{route.component}</ProtectedRoute>
               ) : (
                 route.component
               )
@@ -84,28 +74,20 @@ export default function App() {
   };
 
   return (
-      <AuthProvider>
-        <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
-          <CssBaseline />
-          {controller.layout === "dashboard" && (
-            <>
-              <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
-              <Configurator />
-            </>
-          )}
-          <Routes>
-            {routes.map((route) => (
-              <Route
-                key={route.key}
-                path={route.route}
-                element={route.protected ? <ProtectedRoute>{route.component}</ProtectedRoute> : route.component}
-              />
-            ))}
-            <Route path="/login" element={<Basic />} />
-            <Route path="/" element={isAuthenticated ? <FormListPage /> : <Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboards/analytics" : "/login"} replace />} />
-          </Routes>
-        </ThemeProvider>
-      </AuthProvider>
+    <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
+      <CssBaseline />
+      {controller.layout === "dashboard" && (
+        <>
+          <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
+          <Configurator />
+        </>
+      )}
+      <Routes>
+        {getRoutes(Array.isArray(routes) ? routes : [])}
+        <Route path="/login" element={<Basic />} />
+        <Route path="/" element={authToken || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to={authToken || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
