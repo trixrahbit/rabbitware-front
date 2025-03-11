@@ -36,44 +36,48 @@ function Basic() {
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(""); // ✅ Reset errors before new request
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(""); // ✅ Reset errors before new request
 
-    try {
-      const response = await fetch("https://app.webitservices.com/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // ✅ Fix incorrect Content-Type
-        },
-        body: JSON.stringify({ username: email, password }),
-      });
+  try {
+    const response = await fetch("https://app.webitservices.com/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded", // ✅ Correct Content-Type
+      },
+      body: new URLSearchParams({
+        username: email,
+        password: password,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials or server error");
-      }
-
-      const data = await response.json();
-
-      if (data.access_token && data.user) {
-        login(data.access_token, data.user);
-
-        // ✅ Store in sessionStorage for better security
-        sessionStorage.setItem("authToken", data.access_token);
-        sessionStorage.setItem("user", JSON.stringify(data.user));
-
-        navigate("/dashboards/analytics", { replace: true }); // ✅ Ensure replace
-      } else {
-        throw new Error("Missing authentication token or user data");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError(error.message || "Login failed. Please try again.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error("Invalid credentials or server error");
     }
-  };
+
+    const data = await response.json();
+
+    if (data.access_token && data.user) {
+      login(data.access_token, data.user);
+
+      // ✅ Store in sessionStorage for better security
+      sessionStorage.setItem("authToken", data.access_token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate("/dashboards/analytics", { replace: true }); // ✅ Ensure replace
+    } else {
+      throw new Error("Missing authentication token or user data");
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    setError(error.message || "Login failed. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <BasicLayout image={bgImage}>
