@@ -3,10 +3,10 @@ import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } 
 import { useAuth } from "../../../../../context/AuthContext"; // ✅ Import useAuth
 
 function AddClientModal({ open, onClose, onSave }) {
-  const { organization, user } = useAuth();  // ✅ Get organization & user
+  const { organization, user } = useAuth(); // ✅ Get org & user from context
   const [clientData, setClientData] = useState({
     name: "",
-    domain: "",  // ✅ Change from email to domain
+    domain: "",  // ✅ Fix: Use `domain`, not `email`
     phone: "",
   });
 
@@ -16,15 +16,15 @@ function AddClientModal({ open, onClose, onSave }) {
 
   const handleSubmit = async () => {
     if (!organization?.id || !user?.id) {
-      console.error("❌ Missing organization_id or creator_id!");
+      console.error("❌ Missing `organization_id` or `creator_id`!");
       return;
     }
 
-    // Attach organization_id & creator_id before saving
+    // ✅ Fix: Ensure `domain` & `creator_id` are included
     const clientPayload = {
       ...clientData,
-      organization_id: organization.id,  // ✅ Ensure organization_id is included
-      creator_id: user.id               // ✅ Ensure creator_id is included
+      organization_id: organization.id,
+      creator_id: user.id
     };
 
     console.log("📢 Submitting client data:", clientPayload);
@@ -48,7 +48,7 @@ function AddClientModal({ open, onClose, onSave }) {
         />
         <TextField
           margin="dense"
-          name="domain"  // ✅ Change from email to domain
+          name="domain"  // ✅ Fix: Use `domain`, not `email`
           label="Domain"
           type="text"
           fullWidth
