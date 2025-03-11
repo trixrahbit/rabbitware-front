@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // ✅ Import for redirection
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ Ensures proper routing
+import { createBrowserHistory } from "history"; // ✅ Ensure custom history is correctly imported
 
-// 🚀 Secure Storage Utility
+// ✅ Custom history instance (if used)
+const history = createBrowserHistory();
+
+// ✅ Secure Storage Utility
 const safeParse = (key, defaultValue = null) => {
   try {
     const value = localStorage.getItem(key);
@@ -12,25 +16,25 @@ const safeParse = (key, defaultValue = null) => {
   }
 };
 
-// ✅ Lazy Initial State with Default Values
+// ✅ Lazy Initial State
 const getInitialAuthState = () => ({
   authToken: sessionStorage.getItem("authToken") || null, // 🔒 Use sessionStorage for security
   user: safeParse("user", {}),
   organization: safeParse("organization", {}),
   authOverride: false,
-  isLoading: true, // ✅ Ensure state loads before rendering
+  isLoading: true, // ✅ Prevent premature redirects
 });
 
-// ✅ Action Types for Reducer
+// ✅ Action Types
 const authActionTypes = {
   SET_AUTH_TOKEN: "SET_AUTH_TOKEN",
   LOGOUT: "LOGOUT",
   SET_USER: "SET_USER",
   SET_ORGANIZATION: "SET_ORGANIZATION",
-  SET_LOADING: "SET_LOADING", // ✅ NEW
+  SET_LOADING: "SET_LOADING",
 };
 
-// ✅ Auth Reducer with Immutable Updates
+// ✅ Auth Reducer
 const authReducer = (state, action) => {
   switch (action.type) {
     case authActionTypes.SET_AUTH_TOKEN:
@@ -63,11 +67,11 @@ const AuthContext = createContext();
 // ✅ Auth Provider
 const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, undefined, getInitialAuthState);
-  const navigate = useNavigate(); // ✅ Redirect on login/logout
-  const location = useLocation(); // ✅ Get current URL path
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // ✅ Ensure auth state is properly loaded
+    // ✅ Ensure auth state is properly loaded before navigating
     const token = sessionStorage.getItem("authToken");
     const user = safeParse("user", {});
     const organization = safeParse("organization", {});
