@@ -21,7 +21,7 @@ const clientColumns = [
 
 const ClientsData = () => {
   const { clients, setClients } = useClients();
-  const { authToken, organization } = useAuth();
+  const { authToken, organization, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
