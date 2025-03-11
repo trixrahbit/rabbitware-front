@@ -1,10 +1,10 @@
 import { useAuth } from "context/AuthContext";
-import crmRoutes from "/routing/crmRoutes";
-import serviceRoutes from "/routing/serviceRoutes";
-import projectRoutes from "/routing/projectRoutes";
-import operationsRoutes from "/routing/operationsRoutes";
-import calendarRoutes from "/routing/calendarRoutes";
-import settingsRoutes from "/routing/settingsRoutes";
+import crmRoutes from "routing/crmRoutes";
+import serviceRoutes from "routing/serviceRoutes";
+import projectRoutes from "routing/projectRoutes";
+import operationsRoutes from "routing/operationsRoutes";
+import calendarRoutes from "routing/calendarRoutes";
+import settingsRoutes from "routing/settingsRoutes";
 
 const useFilteredRoutes = () => {
   const { user } = useAuth();
