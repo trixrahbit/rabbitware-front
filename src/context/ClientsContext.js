@@ -1,40 +1,31 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useAuth } from "./AuthContext"; // ✅ Ensure correct import
+import { useAuth } from "./AuthContext";
 
 const ClientsContext = createContext();
 
 export const ClientsProvider = ({ children }) => {
   const [clients, setClients] = useState([]);
   const [subscription, setSubscription] = useState(null);
-  const { authToken, organization } = useAuth(); // ✅ Use organization from AuthContext
+  const { authToken, organization } = useAuth();
 
   useEffect(() => {
+    if (!authToken || !organization?.id) {
+      console.warn("⚠️ Missing authToken or organization.id, skipping API call.");
+      return;
+    }
+
     const fetchClients = async () => {
-      if (!authToken || !organization?.id) return; // ✅ Ensure we have org info
-
       try {
-        console.log("Fetching clients for organization:", organization.id);
-
+        console.log(`📡 Fetching clients for Org ID: ${organization.id}`);
         const response = await axios.get(
           `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
-          {
-            headers: { Authorization: `Bearer ${authToken}` },
-          }
+          { headers: { Authorization: `Bearer ${authToken}` } }
         );
-        console.log("Clients fetched:", response.data);
+        console.log("✅ Clients fetched:", response.data);
         setClients(response.data);
-
-        const subscriptionResponse = await axios.get(
-          `https://app.webitservices.com/api/organizations/${organization.id}/subscriptions`,
-          {
-            headers: { Authorization: `Bearer ${authToken}` },
-          }
-        );
-        console.log("Subscription fetched:", subscriptionResponse.data);
-        setSubscription(subscriptionResponse.data);
       } catch (error) {
-        console.error("Error fetching clients or subscription:", error.response?.data || error.message);
+        console.error("❌ Error fetching clients:", error.response?.data || error.message);
       }
     };
 
