@@ -25,10 +25,12 @@ export default function App() {
   const navigate = useNavigate();
   const routes = useFilteredRoutes();
 
-  // Pass navigate function to AuthContext so it can be used inside `AuthProvider`
+  // ✅ Pass navigate function to AuthContext so it can be used inside `AuthProvider`
   useEffect(() => {
-    setNavigate(navigate);
-  }, [navigate, setNavigate]);
+    if (setNavigate) {
+      setNavigate(navigate);
+    }
+  }, [navigate]);
 
   useMemo(() => {
     setRtlCache(createCache({ key: "rtl", stylisPlugins: [rtlPlugin] }));
@@ -72,6 +74,8 @@ export default function App() {
       return null;
     });
   };
+
+  console.log("Routes before rendering:", routes);
 
   return (
     <ThemeProvider theme={controller.darkMode ? themeDark : theme}>

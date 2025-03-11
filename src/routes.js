@@ -8,6 +8,8 @@ import settingsRoutes from "routing/settingsRoutes";
 
 const useFilteredRoutes = () => {
   const { user } = useAuth();
+  console.log("User data:", user);
+
   const isSuperAdmin = user?.organization?.super_admin === 1;
 
   const filteredCrmRoutes = crmRoutes.filter(

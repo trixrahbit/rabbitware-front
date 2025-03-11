@@ -7,32 +7,34 @@ const ClientsContext = createContext();
 export const ClientsProvider = ({ children }) => {
   const [clients, setClients] = useState([]);
   const [subscription, setSubscription] = useState(null);
-  const { authToken, organization } = useAuth();  // ✅ Use organization from AuthContext
+  const { authToken, organization } = useAuth(); // ✅ Use organization from AuthContext
 
   useEffect(() => {
     const fetchClients = async () => {
       if (!authToken || !organization?.id) return; // ✅ Ensure we have org info
 
       try {
-        // ✅ Fetch Clients via Organization ID
+        console.log("Fetching clients for organization:", organization.id);
+
         const response = await axios.get(
           `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
           {
             headers: { Authorization: `Bearer ${authToken}` },
           }
         );
+        console.log("Clients fetched:", response.data);
         setClients(response.data);
 
-        // ✅ Fetch Subscription (Assuming each org has a single subscription)
         const subscriptionResponse = await axios.get(
           `https://app.webitservices.com/api/organizations/${organization.id}/subscriptions`,
           {
             headers: { Authorization: `Bearer ${authToken}` },
           }
         );
+        console.log("Subscription fetched:", subscriptionResponse.data);
         setSubscription(subscriptionResponse.data);
       } catch (error) {
-        console.error("Error fetching clients or subscription:", error);
+        console.error("Error fetching clients or subscription:", error.response?.data || error.message);
       }
     };
 

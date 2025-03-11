@@ -4,9 +4,9 @@ const AuthContext = createContext();
 
 const initialAuthState = {
   authToken: sessionStorage.getItem("authToken") || null,
-  user: JSON.parse(sessionStorage.getItem("user")) || null,
+  user: JSON.parse(sessionStorage.getItem("user") || "{}"), // ✅ Prevent JSON.parse(null) error
   authOverride: false,
-  isAuthenticated: false,
+  isAuthenticated: !!sessionStorage.getItem("authToken"),
 };
 
 const authActionTypes = {
@@ -17,6 +17,8 @@ const authActionTypes = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case authActionTypes.SET_AUTH:
+      sessionStorage.setItem("authToken", action.payload.authToken);
+      sessionStorage.setItem("user", JSON.stringify(action.payload.user));
       return {
         ...state,
         authToken: action.payload.authToken,
@@ -40,14 +42,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (authToken, user, navigate) => {
-    sessionStorage.setItem("authToken", authToken);
-    sessionStorage.setItem("user", JSON.stringify(user));
-
+    console.log("Logging in user:", user);
     setNavigate(navigate);
     dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user } });
   };
 
   const logout = () => {
+    console.log("Logging out...");
     sessionStorage.clear();
     dispatch({ type: authActionTypes.LOGOUT });
     if (navigateFunction) {
