@@ -86,7 +86,7 @@ export default function App() {
         {getRoutes(Array.isArray(routes) ? routes : [])}
         <Route path="/login" element={<Basic />} />
         <Route path="/" element={authToken || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to={authToken || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={authToken || authOverride ? "/pages/crm/clients" : "/login"} replace />} />
       </Routes>
     </ThemeProvider>
   );
