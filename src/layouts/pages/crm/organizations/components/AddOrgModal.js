@@ -13,13 +13,10 @@ import MDInput from "components/MDInput";
 import { useAuth } from "../../../../../context/AuthContext";
 
 const AddOrgModal = ({ open, onClose, onSave }) => {
-  if (typeof onSave !== "function") {
-    console.error("❌ onSave is not a function. Ensure it is properly passed from the parent component.");
-    return null; // Prevents component from rendering if `onSave` is invalid
-  }
+  // ✅ Call useAuth at the top level (NO conditional Hooks)
+  const { user } = useAuth();
 
-  const { user } = useAuth(); // ✅ Get user from context
-
+  // ✅ Call useState at the top level
   const [orgData, setOrgData] = useState({
     name: "",
     domain: "",
@@ -35,6 +32,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
     sizes: [],
   });
 
+  // ✅ Always call useEffect at the top level
   useEffect(() => {
     if (!open) return;
     const fetchDropdowns = async () => {
@@ -63,6 +61,12 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
   };
 
   const handleSubmit = () => {
+    // ✅ Move validation logic inside the function instead of conditionally returning early
+    if (!onSave || typeof onSave !== "function") {
+      console.error("❌ onSave is not a valid function.");
+      return;
+    }
+
     if (!user?.id) {
       console.error("❌ Missing `creator_id`!");
       return;
@@ -71,13 +75,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
     const orgPayload = { ...orgData, creator_id: user.id };
 
     console.log("📢 Submitting organization data:", orgPayload);
-
-    // ✅ Ensure `onSave` is properly called
-    if (typeof onSave === "function") {
-      onSave(orgPayload);
-    } else {
-      console.error("❌ onSave is not a valid function.");
-    }
+    onSave(orgPayload);
   };
 
   return (
@@ -104,7 +102,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
             <MDInput
               fullWidth select label="Type" name="type"
               value={orgData.type} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
               {dropdownData.types.map((t) => (
                 <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
@@ -117,7 +115,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
             <MDInput
               fullWidth select label="Industry" name="industry"
               value={orgData.industry} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
               {dropdownData.industries.map((i) => (
                 <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>
@@ -134,7 +132,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
             <MDInput
               fullWidth select label="Size" name="size"
               value={orgData.size} onChange={handleChange}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
               {dropdownData.sizes.map((s) => (
                 <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
