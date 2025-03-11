@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {BrowserRouter,  Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
@@ -21,13 +21,11 @@ import useFilteredRoutes from "./routes"; // Ensure this is an array
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
-  const { authToken, authOverride, isLoading } = useAuth();
+  const { authToken, authOverride, isLoading, login, logout } = useAuth();
   const isAuthenticated = !!authToken;
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
-
-  // ✅ Correctly get filtered routes by calling the function
-  const routes = useFilteredRoutes();
+  const navigate = useNavigate(); // ✅ Now inside Router context
 
 
 
@@ -43,10 +41,15 @@ export default function App() {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
+  const routes = useFilteredRoutes() || [];
+
   // 🔥 Show a loading screen while auth is being checked
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+
+
   // ✅ Ensure `allRoutes` is always an array before mapping
   const getRoutes = (allRoutes) => {
     if (!Array.isArray(allRoutes)) {
@@ -81,28 +84,28 @@ export default function App() {
   };
 
   return (
-    <AuthProvider>
-      <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
-        <CssBaseline />
-        {controller.layout === "dashboard" && (
-          <>
-            <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
-            <Configurator />
-          </>
-        )}
-        <Routes>
-          {routes.map((route) => (
-            <Route
-              key={route.key}
-              path={route.route}
-              element={route.protected ? <ProtectedRoute>{route.component}</ProtectedRoute> : route.component}
-            />
-          ))}
-          <Route path="/login" element={<Basic />} />
-          <Route path="/" element={isAuthenticated ? <FormListPage /> : <Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboards/analytics" : "/login"} replace />} />
-        </Routes>
-      </ThemeProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
+          <CssBaseline />
+          {controller.layout === "dashboard" && (
+            <>
+              <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
+              <Configurator />
+            </>
+          )}
+          <Routes>
+            {routes.map((route) => (
+              <Route
+                key={route.key}
+                path={route.route}
+                element={route.protected ? <ProtectedRoute>{route.component}</ProtectedRoute> : route.component}
+              />
+            ))}
+            <Route path="/login" element={<Basic />} />
+            <Route path="/" element={isAuthenticated ? <FormListPage /> : <Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboards/analytics" : "/login"} replace />} />
+          </Routes>
+        </ThemeProvider>
+      </AuthProvider>
   );
 }
