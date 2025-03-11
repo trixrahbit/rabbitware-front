@@ -67,25 +67,25 @@ useEffect(() => {
 const handleSaveClient = async (clientData) => {
   console.log("🚀 Sending Client Data:", clientData);
 
-  if (!clientData.organization_id) {
-    console.error("❌ Organization ID is missing!");
-    return;
-  }
-
   try {
     const response = await axios.post(
       `https://app.webitservices.com/api/organizations/${clientData.organization_id}/clients`,
-      clientData,
+      {
+        name: clientData.name,
+        phone: clientData.phone,
+        creator_id: user?.id  // ✅ Pass creator_id only if necessary
+      },
       { headers: { Authorization: `Bearer ${authToken}` } }
     );
 
     console.log("✅ Client saved successfully:", response.data);
-    fetchClients(); // ✅ Now it's correctly defined and reusable
+    fetchClients();
     handleCloseModal();
   } catch (error) {
     console.error("❌ Error adding client:", error.response?.data || error.message);
   }
 };
+
 
 
 
