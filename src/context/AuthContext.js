@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Import for redirecting
+import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ Import for redirection
 
 // 🚀 Secure Storage Utility
 const safeParse = (key, defaultValue = null) => {
@@ -12,14 +12,14 @@ const safeParse = (key, defaultValue = null) => {
   }
 };
 
-// ✅ Initial State with Default Values
-const initialAuthState = {
-  authToken: sessionStorage.getItem("authToken") || null,  // 🔒 Use sessionStorage for security
+// ✅ Lazy Initial State with Default Values
+const getInitialAuthState = () => ({
+  authToken: sessionStorage.getItem("authToken") || null, // 🔒 Use sessionStorage for security
   user: safeParse("user", {}),
   organization: safeParse("organization", {}),
   authOverride: false,
-  isLoading: true,  // ✅ NEW: Ensure state is fully initialized before rendering
-};
+  isLoading: true, // ✅ Ensure state loads before rendering
+});
 
 // ✅ Action Types for Reducer
 const authActionTypes = {
@@ -42,7 +42,7 @@ const authReducer = (state, action) => {
     case authActionTypes.SET_ORGANIZATION:
       return { ...state, organization: action.payload };
 
-    case authActionTypes.SET_LOADING:  // ✅ NEW: Mark loading as complete
+    case authActionTypes.SET_LOADING: // ✅ NEW: Mark loading as complete
       return { ...state, isLoading: false };
 
     case authActionTypes.LOGOUT:
@@ -62,8 +62,9 @@ const AuthContext = createContext();
 
 // ✅ Auth Provider
 const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialAuthState);
+  const [state, dispatch] = useReducer(authReducer, undefined, getInitialAuthState);
   const navigate = useNavigate(); // ✅ Redirect on login/logout
+  const location = useLocation(); // ✅ Get current URL path
 
   useEffect(() => {
     // ✅ Ensure auth state is properly loaded
@@ -75,9 +76,9 @@ const AuthProvider = ({ children }) => {
       dispatch({ type: authActionTypes.SET_AUTH_TOKEN, payload: token });
       dispatch({ type: authActionTypes.SET_USER, payload: user });
       dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
-    } else {
-      dispatch({ type: authActionTypes.SET_LOADING });
     }
+
+    dispatch({ type: authActionTypes.SET_LOADING }); // ✅ Mark loading complete
   }, []);
 
   // ✅ Secure Login Function
@@ -97,8 +98,11 @@ const AuthProvider = ({ children }) => {
     dispatch({ type: authActionTypes.SET_USER, payload: user });
     dispatch({ type: authActionTypes.SET_ORGANIZATION, payload: organization });
 
-    navigate("/dashboards/analytics"); // ✅ Redirect to dashboard after login
-  }, [navigate]);
+    // ✅ Redirect only if not already on the dashboard
+    if (location.pathname !== "/dashboards/analytics") {
+      navigate("/dashboards/analytics");
+    }
+  }, [navigate, location]);
 
   // ✅ Secure Logout Function
   const logout = useCallback(() => {
@@ -108,8 +112,11 @@ const AuthProvider = ({ children }) => {
 
     dispatch({ type: authActionTypes.LOGOUT });
 
-    navigate("/login"); // ✅ Redirect to login page
-  }, [navigate]);
+    // ✅ Redirect only if not already on login page
+    if (location.pathname !== "/login") {
+      navigate("/login");
+    }
+  }, [navigate, location]);
 
   // ✅ Memoized Context Value for Performance
   const authContextValue = useMemo(
