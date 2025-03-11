@@ -21,13 +21,18 @@ import useFilteredRoutes from "./routes"; // Ensure this is an array
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
-  const { authToken, authOverride } = useAuth();
+  const { authToken, authOverride, isLoading } = useAuth();
   const isAuthenticated = !!authToken;
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
 
   // ✅ Correctly get filtered routes by calling the function
   const routes = useFilteredRoutes();
+
+  // 🔥 Show a loading screen while auth is being checked
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   useMemo(() => {
     setRtlCache(createCache({ key: "rtl", stylisPlugins: [rtlPlugin] }));
@@ -89,13 +94,28 @@ export default function App() {
             <Configurator />
           </>
         )}
-        <Routes>
-          {getRoutes(Array.isArray(routes) ? routes : [])}
-          {getRoutes(Array.isArray(pageRoutes) ? pageRoutes : [])}
-          <Route path="/login" element={<Basic />} />
-          <Route path="/" element={isAuthenticated || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
-        </Routes>
+<Routes>
+  {/* ✅ Show a Loading Screen Until Auth is Ready */}
+  {isLoading ? (
+    <Route path="*" element={<div>Loading...</div>} />
+  ) : (
+    <>
+      {/* ✅ Render Routes Dynamically */}
+      {Array.isArray(routes) && getRoutes(routes)}
+      {Array.isArray(pageRoutes) && getRoutes(pageRoutes)}
+
+      {/* ✅ Public Login Route */}
+      <Route path="/login" element={<Basic />} />
+
+      {/* ✅ Default Route - Redirect to Dashboard if Authenticated, Else Login */}
+      <Route path="/" element={isAuthenticated || authOverride ? <Navigate to="/dashboards/analytics" replace /> : <Navigate to="/login" replace />} />
+
+      {/* ✅ Catch-All Route */}
+      <Route path="*" element={<Navigate to={isAuthenticated || authOverride ? "/dashboards/analytics" : "/login"} replace />} />
+    </>
+  )}
+</Routes>
+
       </ThemeProvider>
     </AuthProvider>
   );
