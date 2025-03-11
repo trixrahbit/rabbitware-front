@@ -12,9 +12,20 @@ function AddClientModal({ open, onClose, onSave }) {
     setClientData({ ...clientData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
-    onSave(clientData);
-  };
+const handleSubmit = async () => {
+  if (!clientData.name || !clientData.email || !clientData.phone) {
+    console.error("❌ Missing required fields!");
+    return;
+  }
+
+  // Ensure the organization ID is attached
+  const clientPayload = { ...clientData, organization_id: organization?.id };
+
+  console.log("📢 Submitting client data:", clientPayload);
+
+  onSave(clientPayload);
+};
+
 
   return (
     <Dialog open={open} onClose={onClose}>
