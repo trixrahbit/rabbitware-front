@@ -33,35 +33,34 @@ const handleSubmit = async (event) => {
   }
 
   try {
-    const response = await fetch('https://app.webitservices.com/api/login', {
+    const response = await fetch('https://app.webitservices.com/api/register', { // ✅ Correct API route
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      // Ensure the payload matches the backend expectation
       body: JSON.stringify({
         name,
         email,
         password,
-        agree_to_terms: agreeTerms, // Correct the field name to match the backend's expected schema
+        agree_to_terms: agreeTerms,
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      // This will now capture HTTP status codes like 422 and log the server's response
-      const errorData = await response.json();
-      console.error("Registration error response:", errorData);
-      throw new Error('Failed to register. Please try again.');
+      console.error("Registration error response:", data);
+      throw new Error(data.detail || "Failed to register. Please try again.");
     }
 
-    const data = await response.json();
     alert(data.message); // Show success message or handle accordingly
     navigate('/authentication/sign-in/cover'); // Navigate to sign-in page upon successful registration
   } catch (error) {
     console.error("Registration error:", error);
-    alert("Registration failed. Please try again.");
+    alert(error.message || "Registration failed. Please try again.");
   }
 };
+
 
 
   return (
