@@ -47,7 +47,6 @@ function Footer({ light }) {
                 &nbsp;Rabbit&nbsp;
               </MDTypography>
             </Link>
-            for a better web.
           </MDBox>
           <MDBox
             component="ul"
@@ -73,12 +72,12 @@ function Footer({ light }) {
                   fontWeight="regular"
                   color={light ? "white" : "dark"}
                 >
-                  Rabbit
+                  WEBIT Services
                 </MDTypography>
               </Link>
             </MDBox>
             <MDBox component="li" px={2} lineHeight={1}>
-              <Link href="https://www.automsp.ai" target="_blank">
+              <Link href="https://www.webitservices.com" target="_blank">
                 <MDTypography
                   variant="button"
                   fontWeight="regular"
@@ -89,7 +88,7 @@ function Footer({ light }) {
               </Link>
             </MDBox>
             <MDBox component="li" px={2} lineHeight={1}>
-              <Link href="https://www.automsp.ai/blog" target="_blank">
+              <Link href="https://www.webitservices.com/blog" target="_blank">
                 <MDTypography
                   variant="button"
                   fontWeight="regular"

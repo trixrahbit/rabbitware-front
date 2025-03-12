@@ -13,6 +13,7 @@ import { useMaterialUIController } from "context";
 import ProtectedRoute from "./ProtectedRoute";
 import { useAuth } from "context/AuthContext";
 import Basic from "./layouts/authentication/sign-in/basic";
+import Cover from "./layouts/authentication/sign-up/cover";
 import FormListPage from "./layouts/pages/formbuilder";
 import useFilteredRoutes from "./routes";
 import LoadingScreen from "components/LoadingScreen";
@@ -89,6 +90,7 @@ export default function App() {
       <Routes>
         {getRoutes(Array.isArray(routes) ? routes : [])}
         <Route path="/login" element={<Basic />} />
+        <Route path="/authentication/sign-up/cover" element={<Cover />} />
         <Route path="/" element={authToken || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to={authToken || authOverride ? "/pages/crm/clients" : "/login"} replace />} />
       </Routes>

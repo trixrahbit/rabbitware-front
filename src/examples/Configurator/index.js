@@ -296,17 +296,7 @@ function Configurator() {
         <Divider />
         <MDBox mt={3} mb={2}>
           <MDBox mb={2}>
-            <MDButton
-              component={Link}
-              href="https://www.creative-tim.com/product/material-dashboard-pro-react"
-              target="_blank"
-              rel="noreferrer"
-              color="info"
-              variant="gradient"
-              fullWidth
-            >
-              buy now
-            </MDButton>
+
           </MDBox>
           <MDBox mb={2}>
             <MDButton

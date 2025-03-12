@@ -82,18 +82,18 @@ function DefaultNavbar({ brand, transparent, light, action }) {
               </MDBox>
             ) : (
               <MDBox display={{ xs: "none", lg: "inline-block" }}>
-                <MDButton
-                  component="a"
-                  href={action.route}
-                  target="_blank"
-                  rel="noreferrer"
-                  variant="gradient"
-                  color={action.color || "info"}
-                  size="small"
-                  sx={{ mt: -0.3 }}
-                >
-                  {action.label}
-                </MDButton>
+                {/*<MDButton*/}
+                {/*  component="a"*/}
+                {/*  href={action.route}*/}
+                {/*  target="_blank"*/}
+                {/*  rel="noreferrer"*/}
+                {/*  variant="gradient"*/}
+                {/*  color={action.color || "info"}*/}
+                {/*  size="small"*/}
+                {/*  sx={{ mt: -0.3 }}*/}
+                {/*>*/}
+                {/*  {action.label}*/}
+                {/*</MDButton>*/}
               </MDBox>
             ))}
 
