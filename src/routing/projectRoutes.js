@@ -8,12 +8,12 @@ const projectRoutes = [
   {
     type: "title",
     title: "Projects",
-    key: "projects",
+    key: "projects-title",
   },
   {
     type: "collapse",
     name: "Projects",
-    key: "projects",
+    key: "projects-full",
     icon: <Icon fontSize="medium">business</Icon>,
     collapse: [
       {
