@@ -1,17 +1,28 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
+import jwtDecode from "jwt-decode";
 
 const AuthContext = createContext();
 
 const initialAuthState = {
   authToken: sessionStorage.getItem("authToken") || null,
   user: JSON.parse(sessionStorage.getItem("user") || "{}"), // ✅ Prevent JSON.parse(null) error
-  authOverride: false,
   isAuthenticated: !!sessionStorage.getItem("authToken"),
 };
 
 const authActionTypes = {
   SET_AUTH: "SET_AUTH",
   LOGOUT: "LOGOUT",
+};
+
+const isTokenExpired = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    if (!decoded.exp) return false; // No expiration, assume valid
+    return decoded.exp * 1000 < Date.now(); // Exp is in seconds, JS uses ms
+  } catch (error) {
+    console.error("❌ Failed to decode token:", error);
+    return true; // If decoding fails, assume it's invalid
+  }
 };
 
 const authReducer = (state, action) => {
@@ -40,8 +51,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log("🔍 Auth Token:", state.authToken);
     console.log("🔍 User Data:", state.user);
-    console.log("🔍 Organization ID:", state.user?.organization?.id);
-  }, [state]);
+    console.log("🔍 Organization ID:", state.user?.organization_id);
+
+    if (state.authToken && isTokenExpired(state.authToken)) {
+      console.warn("🚨 Token expired! Logging out...");
+      logout();
+    }
+  }, [state.authToken]);
 
   const setNavigate = (navigate) => {
     setNavigateFunction(() => navigate);
