@@ -21,6 +21,7 @@ function Cover() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+    const [companyName, setCompanyName] = useState(""); // ✅ Company name state
   const [agreeTerms, setAgreeTerms] = useState(false);
   const navigate = useNavigate(); // Hook to navigate to different routes
 
