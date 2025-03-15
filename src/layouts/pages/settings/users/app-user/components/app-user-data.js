@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DataTable from "examples/Tables/DataTable";
-import { useAuth } from "context/AuthContext"; // ✅ Ensure this import path is correct
+import { useAuth } from "context/AuthContext"; // ✅ Ensure import path is correct
+import { useClients } from "context/ClientsContext"; // ✅ Import ClientsContext
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
-import AddUserModal from "./AddUserModal"; // ✅ Adjust import path as needed
+import AddUserModal from "./AddUserModal";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -16,12 +17,15 @@ const ApplicationUsersData = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  const { authToken, user } = useAuth(); // ✅ Extract `user` directly
-  const organizationId = user?.organization_id; // ✅ Get `organization_id` from user
+  const { authToken } = useAuth(); // ✅ Only use authToken from AuthContext
+  const { clients } = useClients(); // ✅ Get `clients` from ClientsContext
 
-  // ✅ Log to check if `organization_id` is available
+  // ✅ Extract `organization_id` from the first client (if available)
+  const organizationId = clients.length > 0 ? clients[0].organization_id : null;
+
+  // ✅ Log organization_id to verify it's being retrieved
   useEffect(() => {
-    console.log("🔍 Organization ID from user:", organizationId);
+    console.log("🔍 Organization ID from ClientsContext:", organizationId);
   }, [organizationId]);
 
   // Fetch users based on the current organization
@@ -46,7 +50,7 @@ const ApplicationUsersData = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [organizationId, authToken]); // ✅ Depend on `organizationId` from user
+  }, [organizationId, authToken]); // ✅ Depend on `organizationId` from ClientsContext
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
