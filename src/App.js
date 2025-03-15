@@ -76,8 +76,6 @@ export default function App() {
     });
   };
 
-  console.log("Routes before rendering:", routes);
-
   return (
     <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
       <CssBaseline />

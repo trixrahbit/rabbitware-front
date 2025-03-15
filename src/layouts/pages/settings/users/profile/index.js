@@ -5,6 +5,7 @@ import axios from "axios";
 // MUI Components
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress"; // ✅ Loading Indicator
 
 // Icons
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -38,11 +39,18 @@ import team4 from "assets/images/team-4.jpg";
 
 function UserProfile() {
   const { authToken, user } = useAuth();
-  const [userProfile, setUserProfile] = useState({});
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // ✅ Error State Handling
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      if (!authToken) {
+        setError("No authentication token found.");
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await axios.get("https://app.webitservices.com/api/profile", {
           headers: { Authorization: `Bearer ${authToken}` },
@@ -50,14 +58,39 @@ function UserProfile() {
         setUserProfile(response.data);
       } catch (error) {
         console.error("❌ Error fetching user profile:", error);
+        setError("Failed to load profile. Please try again.");
       }
       setLoading(false);
     };
 
-    if (authToken) {
-      fetchUserProfile();
-    }
-  }, [authToken]);
+    fetchUserProfile();
+  }, [authToken]); // ✅ Only runs when `authToken` changes
+
+  // ✅ Loading Indicator
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
+          <CircularProgress color="info" />
+        </MDBox>
+        <Footer />
+      </DashboardLayout>
+    );
+  }
+
+  // ✅ Error Handling UI
+  if (error) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
+          <MDTypography variant="h6" color="error">{error}</MDTypography>
+        </MDBox>
+        <Footer />
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -76,13 +109,13 @@ function UserProfile() {
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
               <ProfileInfoCard
                 title="Profile Information"
-                description={`Hi, I’m ${userProfile.name}. Welcome to your profile page!`}
+                description={`Hi, I’m ${userProfile?.name}. Welcome to your profile page!`}
                 info={{
-                  fullName: userProfile.name || "N/A",
-                  mobile: userProfile.mobile || "N/A",
-                  email: userProfile.email || "N/A",
-                  location: userProfile.location || "N/A",
-                  organization: userProfile.organization?.name || "N/A",
+                  fullName: userProfile?.name || "N/A",
+                  mobile: userProfile?.mobile || "N/A",
+                  email: userProfile?.email || "N/A",
+                  location: userProfile?.location || "N/A",
+                  organization: userProfile?.organization?.name || "N/A",
                 }}
                 social={[
                   { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
@@ -112,46 +145,18 @@ function UserProfile() {
         {/* User Projects */}
         <MDBox p={2}>
           <Grid container spacing={6}>
-            <Grid item xs={12} md={6} xl={3}>
-              <DefaultProjectCard
-                image={homeDecor1}
-                label="Project #1"
-                title="Modern Design"
-                description="A cutting-edge design project."
-                action={{ type: "internal", route: "/projects/1", color: "info", label: "View Project" }}
-                authors={[{ image: team1, name: "John Doe" }, { image: team2, name: "Jane Smith" }]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} xl={3}>
-              <DefaultProjectCard
-                image={homeDecor2}
-                label="Project #2"
-                title="Tech Platform"
-                description="Building a new AI-driven platform."
-                action={{ type: "internal", route: "/projects/2", color: "info", label: "View Project" }}
-                authors={[{ image: team3, name: "Alice Brown" }, { image: team4, name: "Bob Martin" }]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} xl={3}>
-              <DefaultProjectCard
-                image={homeDecor3}
-                label="Project #3"
-                title="Marketing Campaign"
-                description="A new campaign for a major client."
-                action={{ type: "internal", route: "/projects/3", color: "info", label: "View Project" }}
-                authors={[{ image: team1, name: "John Doe" }, { image: team3, name: "Alice Brown" }]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} xl={3}>
-              <DefaultProjectCard
-                image={homeDecor4}
-                label="Project #4"
-                title="E-commerce Revamp"
-                description="A redesign for a global e-commerce site."
-                action={{ type: "internal", route: "/projects/4", color: "info", label: "View Project" }}
-                authors={[{ image: team2, name: "Jane Smith" }, { image: team4, name: "Bob Martin" }]}
-              />
-            </Grid>
+            {[homeDecor1, homeDecor2, homeDecor3, homeDecor4].map((image, index) => (
+              <Grid item xs={12} md={6} xl={3} key={index}>
+                <DefaultProjectCard
+                  image={image}
+                  label={`Project #${index + 1}`}
+                  title={`Project Title ${index + 1}`}
+                  description="A sample project description."
+                  action={{ type: "internal", route: `/projects/${index + 1}`, color: "info", label: "View Project" }}
+                  authors={[{ image: team1, name: "John Doe" }, { image: team2, name: "Jane Smith" }]}
+                />
+              </Grid>
+            ))}
           </Grid>
         </MDBox>
       </Header>
