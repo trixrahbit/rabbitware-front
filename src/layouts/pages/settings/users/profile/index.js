@@ -39,7 +39,7 @@ import team4 from "assets/images/team-4.jpg";
 function UserProfile() {
   const { authToken } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
-  const [error, setError] = useState(null); // ✅ Error Handling
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -68,9 +68,8 @@ function UserProfile() {
     fetchUserProfile();
   }, [authToken]);
 
-  console.log("✅ Rendering profile page...");
+  console.log("✅ Current userProfile state:", userProfile);
 
-  // ✅ Handle API error
   if (error) {
     return (
       <DashboardLayout>
@@ -83,6 +82,20 @@ function UserProfile() {
     );
   }
 
+  if (!userProfile) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
+          <MDTypography variant="h6">Loading profile...</MDTypography>
+        </MDBox>
+        <Footer />
+      </DashboardLayout>
+    );
+  }
+
+  console.log("✅ Rendering profile page...");
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -90,47 +103,37 @@ function UserProfile() {
       <Header>
         <MDBox mt={5} mb={3}>
           <Grid container spacing={1}>
-            {/* Settings Column */}
             <Grid item xs={12} md={6} xl={4}>
               <PlatformSettings />
             </Grid>
 
-            {/* Profile Info */}
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
 
-              {/* ✅ Render ProfileInfoCard only if userProfile exists */}
-              {userProfile ? (
-                <ProfileInfoCard
-                  title="Profile Information"
-                  description={`Hi, I’m ${userProfile.name || "N/A"}. Welcome to your profile page!`}
-                  info={{
-                    fullName: userProfile.name || "N/A",
-                    mobile: userProfile.mobile || "N/A",
-                    email: userProfile.email || "N/A",
-                    location: userProfile.location || "N/A",
-                    organization: userProfile.organization_id ? `Org ID: ${userProfile.organization_id}` : "N/A",
-                  }}
-                  social={[
-                    { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
-                    { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
-                    { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
-                  ]}
-                  action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
-                  shadow={false}
-                />
-              ) : (
-                <MDBox textAlign="center">
-                  <MDTypography variant="h6">Loading profile...</MDTypography>
-                </MDBox>
-              )}
+              <ProfileInfoCard
+                title="Profile Information"
+                description={`Hi, I’m ${userProfile.name || "N/A"}. Welcome to your profile page!`}
+                info={{
+                  fullName: userProfile.name || "N/A",
+                  mobile: userProfile.mobile || "N/A",
+                  email: userProfile.email || "N/A",
+                  location: userProfile.location || "N/A",
+                  organization: userProfile.organization_id ? `Org ID: ${userProfile.organization_id}` : "N/A",
+                }}
+                social={[
+                  { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
+                  { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
+                  { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
+                ]}
+                action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
+                shadow={false}
+              />
 
               <Divider orientation="vertical" sx={{ mx: 0 }} />
             </Grid>
           </Grid>
         </MDBox>
 
-        {/* Projects Section */}
         <MDBox pt={2} px={2} lineHeight={1.25}>
           <MDTypography variant="h6" fontWeight="medium">
             Projects
@@ -142,7 +145,6 @@ function UserProfile() {
           </MDBox>
         </MDBox>
 
-        {/* User Projects */}
         <MDBox p={2}>
           <Grid container spacing={6}>
             {[homeDecor1, homeDecor2, homeDecor3, homeDecor4].map((image, index) => (
