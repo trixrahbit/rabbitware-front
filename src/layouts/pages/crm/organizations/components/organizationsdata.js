@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { TextField, InputAdornment, Tooltip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import DataTable from "examples/Tables/DataTable";
+
 import { useAuth } from "context/AuthContext";
 import MDBox from "components/MDBox";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import AddIcon from "@mui/icons-material/Add";
+import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
+
 import AddOrgModal from "./AddOrgModal";
 import OrgDetailModal from "./OrgDetailModal";
-import {useClients} from "../../../../../context/ClientsContext";
 
 const orgColumns = [
   { Header: "Name", accessor: "name", width: "30%" },
@@ -16,85 +20,113 @@ const orgColumns = [
   { Header: "Phone", accessor: "phone", width: "30%" },
 ];
 
-const OrganizationsData = ({ onStatsFetched }) => {
+const OrganizationsData = () => {
+  const { authToken } = useAuth();
   const [organizations, setOrganizations] = useState([]);
-  const { authToken, organization } = useAuth(); // Fetch organization from context
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const { clients, setClients } = useClients(); // ✅ Ensure useClients is imported properly
 
   // Fetch organizations
-const fetchOrganizations = async () => {
-  try {
-    const response = await axios.get("https://app.webitservices.com/api/organizations", {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    setOrganizations(response.data);
-  // Now properly sets organizations
-  } catch (error) {
-    console.error("Error fetching organizations:", error);
-  }
-};
+  const fetchOrganizations = async () => {
+    if (!authToken) return;
+    setLoading(true);
+    try {
+      const response = await axios.get("https://app.webitservices.com/api/organizations", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setOrganizations(response.data);
+    } catch (error) {
+      console.error("❌ Error fetching organizations:", error);
+    }
+    setLoading(false);
+  };
 
-
-useEffect(() => {
-  if (authToken) {
+  useEffect(() => {
     fetchOrganizations();
-  }
-}, [authToken]);
+  }, [authToken]);
 
+  // Handle adding a new organization
+  const handleSaveOrg = async (orgData) => {
+    try {
+      await axios.post(`https://app.webitservices.com/api/organizations`, orgData, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      fetchOrganizations();
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("❌ Error saving organization:", error.response?.data || error.message);
+    }
+  };
 
-const handleSaveOrg = async (orgData) => {
-  try {
-    const response = await axios.post(
-      `https://app.webitservices.com/api/organizations`, // ✅ Fixed API URL
-      orgData,
-      { headers: { Authorization: `Bearer ${authToken}` } }
-    );
-    console.log("✅ Organization saved:", response.data);
-    fetchOrganizations(); // ✅ Refresh list
-    setIsModalOpen(false);
-  } catch (error) {
-    console.error("❌ Error saving organization:", error.response?.data || error.message);
-  }
-};
-
+  // Filter organizations based on search
+  const filteredOrganizations = useMemo(
+    () => organizations.filter((org) => org.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [organizations, searchQuery]
+  );
 
   return (
-    <MDBox pt={3}>
-
-      {/* Organizations Data Table */}
+    <MDBox p={3}>
+      {/* ✅ Organizations Data Table */}
       <DataTable
         table={{
           columns: orgColumns,
-          rows: organizations.map((org) => ({
+          rows: filteredOrganizations.map((org) => ({
             ...org,
             name: (
-              <button
+              <MDTypography
+                variant="button"
+                color="primary"
+                sx={{ cursor: "pointer", textDecoration: "none" }}
                 onClick={() => {
                   setSelectedOrg(org);
                   setDetailsModalOpen(true);
                 }}
-                style={{
-                  textDecoration: "none",
-                  border: "none",
-                  background: "none",
-                  padding: 0,
-                  color: "blue",
-                  cursor: "pointer",
-                }}
               >
                 {org.name}
-              </button>
+              </MDTypography>
             ),
           })),
         }}
         isLoading={loading}
+        entriesPerPage={{ defaultValue: 10, options: [10, 25, 50, 100] }}
+        showTotalEntries
+        customHeader={(
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            {/* ✅ Center: Search Bar & Filter */}
+            <MDBox display="flex" alignItems="center" gap={2} justifyContent="center" flexGrow={1}>
+              <TextField
+                placeholder="Search Organizations"
+                variant="outlined"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  backgroundColor: "background.paper",
+                  borderRadius: "8px",
+                  "&:hover": { backgroundColor: "background.default" },
+                  maxWidth: "250px", // ✅ Properly sized
+                }}
+              />
+              <MDButton variant="outlined" color="secondary" startIcon={<FilterListIcon />}>
+                Filter
+              </MDButton>
+            </MDBox>
+
+
+          </MDBox>
+        )}
       />
 
-      {/* Modals */}
+      {/* ✅ Modals */}
       {isModalOpen && <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveOrg} />}
       {detailsModalOpen && selectedOrg && (
         <OrgDetailModal

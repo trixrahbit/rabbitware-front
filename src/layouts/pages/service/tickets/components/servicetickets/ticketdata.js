@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Button, Checkbox, IconButton, Tooltip, Box } from "@mui/material";
+import { Checkbox, IconButton, Tooltip, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MergeIcon from "@mui/icons-material/CallMerge";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DataTable from "examples/Tables/DataTable";
 import MDTypography from "components/MDTypography";
-import NewTicketModal from "./NewTicketModal"; // ✅ Import the modal component
 
 // Define table columns
 const ticketColumns = [
@@ -47,10 +45,6 @@ const ticketColumns = [
 const TicketData = ({ onTicketClick }) => {
   const [tickets, setTickets] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     axios
@@ -81,23 +75,10 @@ const TicketData = ({ onTicketClick }) => {
     });
   };
 
-  const handleTicketCreated = (newTicket) => {
-    setTickets((prevTickets) => [...prevTickets, newTicket]); // ✅ Update state with new ticket
-  };
-
   return (
     <Box>
       {/* Actions Bar */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={handleOpenModal} // ✅ Open modal instead of undefined function
-        >
-          Create Ticket
-        </Button>
-
         {selectedTickets.length > 0 && (
           <Box>
             <Tooltip title="Delete Selected">
@@ -121,9 +102,6 @@ const TicketData = ({ onTicketClick }) => {
           rows: tickets,
         }}
       />
-
-      {/* New Ticket Modal */}
-      <NewTicketModal open={isModalOpen} onClose={handleCloseModal} onTicketCreated={handleTicketCreated} />
     </Box>
   );
 };
