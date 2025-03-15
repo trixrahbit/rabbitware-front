@@ -121,24 +121,25 @@ function UserProfile() {
             {/* Profile Info */}
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
-              <ProfileInfoCard
-                title="Profile Information"
-                description={`Hi, I’m ${userProfile?.name}. Welcome to your profile page!`}
-                info={{
-                  fullName: userProfile?.name || "N/A",
-                  mobile: userProfile?.mobile || "N/A",
-                  email: userProfile?.email || "N/A",
-                  location: userProfile?.location || "N/A",
-                  organization: userProfile?.organization?.name || "N/A",
-                }}
-                social={[
-                  { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
-                  { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
-                  { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
-                ]}
-                action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
-                shadow={false}
-              />
+<ProfileInfoCard
+  title="Profile Information"
+  description={`Hi, I’m ${userProfile?.name || "N/A"}. Welcome to your profile page!`}
+  info={{
+    fullName: userProfile?.name || "N/A",
+    mobile: userProfile?.mobile || "N/A",
+    email: userProfile?.email || "N/A",
+    location: userProfile?.location || "N/A",
+    organization: userProfile?.organization_id ? `Org ID: ${userProfile.organization_id}` : "N/A",
+  }}
+  social={[
+    { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
+    { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
+    { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
+  ]}
+  action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
+  shadow={false}
+/>
+
               <Divider orientation="vertical" sx={{ mx: 0 }} />
             </Grid>
           </Grid>
