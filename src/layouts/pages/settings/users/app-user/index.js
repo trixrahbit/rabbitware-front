@@ -12,7 +12,7 @@ const ApplicationUsersPage = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
-        <MDTypography variant="h4" fontWeight="medium">Application Users</MDTypography>
+        <MDTypography variant="h4" fontWeight="medium">Users</MDTypography>
         <MDBox mt={2}>
           <ApplicationUsersData />
         </MDBox>
