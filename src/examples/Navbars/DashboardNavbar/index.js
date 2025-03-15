@@ -140,7 +140,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
       logout();
       navigate("/login");
     } else if (action === "profile") {
-      navigate("/pages/profile/profile-settings");
+      navigate("/pages/profile/profile-overview");
     }
   };
 
