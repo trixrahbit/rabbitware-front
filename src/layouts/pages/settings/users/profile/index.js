@@ -5,7 +5,6 @@ import axios from "axios";
 // MUI Components
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-import CircularProgress from "@mui/material/CircularProgress"; // ✅ Loading Indicator
 
 // Icons
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -40,58 +39,39 @@ import team4 from "assets/images/team-4.jpg";
 function UserProfile() {
   const { authToken } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // ✅ Error State Handling
+  const [error, setError] = useState(null); // ✅ Error Handling
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      console.log("🚀 Fetching user profile..."); // ✅ Log API Call
+      console.log("🚀 Fetching user profile...");
 
       if (!authToken) {
         console.error("❌ No authentication token found.");
         setError("No authentication token found.");
-        setLoading(false);
         return;
       }
 
       try {
-        console.log("🔑 Auth Token:", authToken); // ✅ Log Auth Token
-
+        console.log("🔑 Auth Token:", authToken);
         const response = await axios.get("https://app.webitservices.com/api/profile", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
-        console.log("✅ API Response:", response.data); // ✅ Log Response Data
+        console.log("✅ API Response:", response.data);
         setUserProfile(response.data);
       } catch (error) {
         console.error("❌ Error fetching user profile:", error);
         setError("Failed to load profile. Please try again.");
-      } finally {
-        console.log("🔄 Setting loading to false...");
-        setLoading(false); // ✅ Ensure loading is stopped
       }
     };
 
     fetchUserProfile();
-  }, [authToken]); // ✅ Only runs when `authToken` changes
+  }, [authToken]);
 
-  // ✅ Loading Indicator
-  if (loading) {
-    console.log("⏳ Profile is loading...");
-    return (
-      <DashboardLayout>
-        <DashboardNavbar />
-        <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
-          <CircularProgress color="info" />
-        </MDBox>
-        <Footer />
-      </DashboardLayout>
-    );
-  }
+  console.log("✅ Rendering profile page...");
 
-  // ✅ Error Handling UI
+  // ✅ Handle API error
   if (error) {
-    console.log("🚨 Error encountered:", error);
     return (
       <DashboardLayout>
         <DashboardNavbar />
@@ -102,9 +82,6 @@ function UserProfile() {
       </DashboardLayout>
     );
   }
-
-  console.log("✅ Rendering profile page...");
-  console.log("👤 User Profile Data:", userProfile);
 
   return (
     <DashboardLayout>
@@ -121,24 +98,32 @@ function UserProfile() {
             {/* Profile Info */}
             <Grid item xs={12} md={6} xl={4} sx={{ display: "flex" }}>
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
-<ProfileInfoCard
-  title="Profile Information"
-  description={`Hi, I’m ${userProfile?.name || "N/A"}. Welcome to your profile page!`}
-  info={{
-    fullName: userProfile?.name || "N/A",
-    mobile: userProfile?.mobile || "N/A",
-    email: userProfile?.email || "N/A",
-    location: userProfile?.location || "N/A",
-    organization: userProfile?.organization_id ? `Org ID: ${userProfile.organization_id}` : "N/A",
-  }}
-  social={[
-    { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
-    { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
-    { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
-  ]}
-  action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
-  shadow={false}
-/>
+
+              {/* ✅ Render ProfileInfoCard only if userProfile exists */}
+              {userProfile ? (
+                <ProfileInfoCard
+                  title="Profile Information"
+                  description={`Hi, I’m ${userProfile.name || "N/A"}. Welcome to your profile page!`}
+                  info={{
+                    fullName: userProfile.name || "N/A",
+                    mobile: userProfile.mobile || "N/A",
+                    email: userProfile.email || "N/A",
+                    location: userProfile.location || "N/A",
+                    organization: userProfile.organization_id ? `Org ID: ${userProfile.organization_id}` : "N/A",
+                  }}
+                  social={[
+                    { link: "https://www.facebook.com", icon: <FacebookIcon />, color: "facebook" },
+                    { link: "https://twitter.com", icon: <TwitterIcon />, color: "twitter" },
+                    { link: "https://www.instagram.com", icon: <InstagramIcon />, color: "instagram" },
+                  ]}
+                  action={{ route: "/edit-profile", tooltip: "Edit Profile" }}
+                  shadow={false}
+                />
+              ) : (
+                <MDBox textAlign="center">
+                  <MDTypography variant="h6">Loading profile...</MDTypography>
+                </MDBox>
+              )}
 
               <Divider orientation="vertical" sx={{ mx: 0 }} />
             </Grid>
