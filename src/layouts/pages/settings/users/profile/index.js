@@ -82,17 +82,19 @@ function UserProfile() {
     );
   }
 
-  if (!userProfile) {
-    return (
-      <DashboardLayout>
-        <DashboardNavbar />
-        <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
-          <MDTypography variant="h6">Loading profile...</MDTypography>
-        </MDBox>
-        <Footer />
-      </DashboardLayout>
-    );
-  }
+if (!userProfile) {
+  console.log("⏳ Waiting for userProfile...");
+  return (
+    <DashboardLayout>
+      <DashboardNavbar />
+      <MDBox display="flex" justifyContent="center" alignItems="center" height="80vh">
+        <MDTypography variant="h6">Loading profile... {JSON.stringify(userProfile)}</MDTypography>
+      </MDBox>
+      <Footer />
+    </DashboardLayout>
+  );
+}
+
 
   console.log("✅ Rendering profile page...");
 
