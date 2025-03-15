@@ -38,29 +38,38 @@ import team3 from "assets/images/team-3.jpg";
 import team4 from "assets/images/team-4.jpg";
 
 function UserProfile() {
-  const { authToken, user } = useAuth();
+  const { authToken } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // ✅ Error State Handling
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      console.log("🚀 Fetching user profile..."); // ✅ Log API Call
+
       if (!authToken) {
+        console.error("❌ No authentication token found.");
         setError("No authentication token found.");
         setLoading(false);
         return;
       }
 
       try {
+        console.log("🔑 Auth Token:", authToken); // ✅ Log Auth Token
+
         const response = await axios.get("https://app.webitservices.com/api/profile", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
+
+        console.log("✅ API Response:", response.data); // ✅ Log Response Data
         setUserProfile(response.data);
       } catch (error) {
         console.error("❌ Error fetching user profile:", error);
         setError("Failed to load profile. Please try again.");
+      } finally {
+        console.log("🔄 Setting loading to false...");
+        setLoading(false); // ✅ Ensure loading is stopped
       }
-      setLoading(false);
     };
 
     fetchUserProfile();
@@ -68,6 +77,7 @@ function UserProfile() {
 
   // ✅ Loading Indicator
   if (loading) {
+    console.log("⏳ Profile is loading...");
     return (
       <DashboardLayout>
         <DashboardNavbar />
@@ -81,6 +91,7 @@ function UserProfile() {
 
   // ✅ Error Handling UI
   if (error) {
+    console.log("🚨 Error encountered:", error);
     return (
       <DashboardLayout>
         <DashboardNavbar />
@@ -91,6 +102,9 @@ function UserProfile() {
       </DashboardLayout>
     );
   }
+
+  console.log("✅ Rendering profile page...");
+  console.log("👤 User Profile Data:", userProfile);
 
   return (
     <DashboardLayout>
