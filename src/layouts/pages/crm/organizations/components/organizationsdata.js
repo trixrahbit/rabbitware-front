@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { TextField, InputAdornment, Tooltip } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import DataTable from "examples/Tables/DataTable";
 
 import { useAuth } from "context/AuthContext";
@@ -29,7 +27,7 @@ const OrganizationsData = () => {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  // ✅ Fetch organizations function
+  // ✅ Fetch organizations from API
   const fetchOrganizations = async () => {
     if (!authToken) return;
     setLoading(true);
@@ -37,87 +35,81 @@ const OrganizationsData = () => {
       const response = await axios.get("https://app.webitservices.com/api/organizations", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      setOrganizations(response.data);
+
+      console.log("✅ API Response:", response.data); // 🚀 Debugging
+
+      if (!Array.isArray(response.data)) {
+        throw new Error("API did not return an array.");
+      }
+
+      // ✅ Ensure each organization has a valid ID
+      const sanitizedOrgs = response.data.filter((org) => org?.id);
+      console.log("📊 Sanitized Organizations:", sanitizedOrgs);
+      setOrganizations(sanitizedOrgs);
     } catch (error) {
       console.error("❌ Error fetching organizations:", error);
     }
     setLoading(false);
   };
 
-  // ✅ Fetch organizations on initial load
   useEffect(() => {
     fetchOrganizations();
   }, [authToken]);
 
-  // ✅ Refresh organizations list when the details modal closes
-  const handleModalClose = () => {
-    setDetailsModalOpen(false);
-    setSelectedOrg(null);
-    fetchOrganizations(); // ✅ Refresh list after closing the modal
+  useEffect(() => {
+    console.log("📊 Updated organizations state:", organizations); // Debug state changes
+  }, [organizations]);
+
+  // ✅ Handle opening the details modal
+  const handleOpenDetails = (org) => {
+    if (!org || !org.id) {
+      console.error("❌ ERROR: Selected organization is missing an ID:", org);
+      return;
+    }
+    console.log("🔹 Opening details for:", org);
+    setSelectedOrg(org);
+    setDetailsModalOpen(true);
   };
+
+  // ✅ Filter organizations based on search
+  const filteredOrganizations = useMemo(() => {
+    if (!Array.isArray(organizations)) return [];
+    return organizations.filter(
+      (org) => org?.name && org.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [organizations, searchQuery]);
+
+  // ✅ Ensure DataTable gets valid data
+  const tableRows = filteredOrganizations
+    .map((org) => {
+      if (!org.id) {
+        console.warn("⚠️ Organization missing ID:", org); // Debugging
+        return null; // Skip invalid entries
+      }
+      return {
+        ...org,
+        name: (
+          <MDTypography
+            variant="button"
+            color="primary"
+            sx={{ cursor: "pointer", textDecoration: "none" }}
+            onClick={() => handleOpenDetails(org)}
+          >
+            {org.name}
+          </MDTypography>
+        ),
+      };
+    })
+    .filter(Boolean); // Remove null values
+
+  console.log("📊 Final Table Rows:", tableRows); // Debug DataTable content
 
   return (
     <MDBox p={3}>
-      <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        {/* ✅ Search Bar */}
-        <TextField
-          placeholder="Search Organizations"
-          variant="outlined"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            backgroundColor: "background.paper",
-            borderRadius: "8px",
-            "&:hover": { backgroundColor: "background.default" },
-            maxWidth: "250px", // ✅ Properly sized
-          }}
-        />
-
-        {/* ✅ Filter & Add Organization Buttons */}
-        <MDBox display="flex" gap={1}>
-          <MDButton variant="outlined" color="secondary" startIcon={<FilterListIcon />}>
-            Filter
-          </MDButton>
-          <MDButton
-            variant="contained"
-            color="info"
-            startIcon={<AddIcon />}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Add Organization
-          </MDButton>
-        </MDBox>
-      </MDBox>
-
-      {/* ✅ Organizations Data Table */}
       <DataTable
         table={{
           columns: orgColumns,
-          rows: organizations
-            .filter((org) => org.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((org) => ({
-              ...org,
-              name: (
-                <MDTypography
-                  variant="button"
-                  color="primary"
-                  sx={{ cursor: "pointer", textDecoration: "none" }}
-                  onClick={() => {
-                    setSelectedOrg({ ...org }); // ✅ Ensure latest org data before opening modal
-                    setDetailsModalOpen(true);
-                  }}
-                >
-                  {org.name}
-                </MDTypography>
-              ),
-            })),
+          rows: tableRows,
         }}
         isLoading={loading}
         entriesPerPage={{ defaultValue: 10, options: [10, 25, 50, 100] }}
@@ -125,11 +117,17 @@ const OrganizationsData = () => {
       />
 
       {/* ✅ Modals */}
-      {isModalOpen && (
-        <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={fetchOrganizations} />
-      )}
+      {isModalOpen && <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />}
       {detailsModalOpen && selectedOrg && (
-        <OrgDetailModal open={detailsModalOpen} onClose={handleModalClose} organization={selectedOrg} refreshOrganizations={fetchOrganizations} />
+        <OrgDetailModal
+          open={detailsModalOpen}
+          onClose={() => {
+            setDetailsModalOpen(false);
+            setSelectedOrg(null);
+          }}
+          organization={selectedOrg} // ✅ Correctly passing the selected organization
+          refreshOrganizations={fetchOrganizations}
+        />
       )}
     </MDBox>
   );

@@ -6,12 +6,11 @@ import {
   Grid,
   Typography,
   TextField,
-  MenuItem,
-  IconButton,
   Tabs,
   Tab,
   Card,
   CardContent,
+  IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -42,16 +41,15 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
   const [orgData, setOrgData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Ensure selected organization is set when modal opens
-  useEffect(() => {
-    if (organization && organization.id) {
-      console.log("✅ Selected organization:", organization);
-      setOrgData({ ...organization });
-    } else {
-      console.warn("⚠️ No organization selected!");
-      setOrgData(null); // Prevents errors if no org is selected
-    }
-  }, [organization, open]);
+useEffect(() => {
+  if (!organization || !organization.id) {
+    console.error("❌ ERROR: No valid organization received in modal!", organization);
+    return;
+  }
+  console.log("✅ Modal received organization:", organization);
+  setOrgData({ ...organization });
+}, [organization, open]);
+
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -64,12 +62,11 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
 
   const handleSave = async () => {
     if (!orgData?.id) {
-      console.error("❌ ERROR: Missing selected Organization ID");
+      console.error("❌ ERROR: Selected Organization ID is missing!", orgData);
       alert("Organization ID is missing! Please select an organization before saving.");
       return;
     }
 
-    // ✅ Ensure the logged-in user's organization ID is available for permission checks
     const superAdminOrgId = user?.organization_id;
     if (!superAdminOrgId) {
       console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
@@ -87,23 +84,20 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     setLoading(true);
     try {
       await axios.post(
-        `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Updates selected organization
+        `https://app.webitservices.com/api/organizations/${orgData.id}`,
         payload,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
-            "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Used for permission check
+            "X-Super-Admin-Org-ID": superAdminOrgId,
           },
         }
       );
 
       console.log("✅ Organization updated successfully");
 
-      // ✅ Refresh the organization list after saving
       await refreshOrganizations();
-
-      // ✅ Close modal and exit edit mode after update
       setEditMode(false);
       onClose();
     } catch (error) {
@@ -112,82 +106,82 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     setLoading(false);
   };
 
-  return (
-    <Modal open={open} onClose={onClose} aria-labelledby="organization-details-modal">
-      <Box sx={style}>
-        <IconButton aria-label="close" onClick={onClose} sx={{ position: "absolute", right: 8, top: 8 }}>
-          <CloseIcon />
-        </IconButton>
+return (
+  <Modal open={open} onClose={onClose} aria-labelledby="organization-details-modal">
+    <Box sx={style}>
+      <IconButton aria-label="close" onClick={onClose} sx={{ position: "absolute", right: 8, top: 8 }}>
+        <CloseIcon />
+      </IconButton>
 
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight="bold" color="primary">
-            Organization Details
-          </Typography>
-          <Box>
-            {editMode ? (
-              <>
-                <MDButton variant="contained" color="info" startIcon={<SaveIcon />} onClick={handleSave} disabled={loading}>
-                  Save
-                </MDButton>
-                <MDButton variant="contained" color="warning" startIcon={<CancelIcon />} onClick={() => setEditMode(false)} disabled={loading} sx={{ ml: 1 }}>
-                  Cancel
-                </MDButton>
-              </>
-            ) : (
-              <MDButton variant="contained" color="info" startIcon={<EditIcon />} onClick={() => setEditMode(true)} disabled={loading}>
-                Edit
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h5" fontWeight="bold" color="primary">
+          Organization Details
+        </Typography>
+        <Box>
+          {editMode ? (
+            <>
+              <MDButton variant="contained" color="info" startIcon={<SaveIcon />} onClick={handleSave} disabled={loading}>
+                Save
               </MDButton>
-            )}
-          </Box>
+              <MDButton variant="contained" color="warning" startIcon={<CancelIcon />} onClick={() => setEditMode(false)} disabled={loading} sx={{ ml: 1 }}>
+                Cancel
+              </MDButton>
+            </>
+          ) : (
+            <MDButton variant="contained" color="info" startIcon={<EditIcon />} onClick={() => setEditMode(true)} disabled={loading}>
+              Edit
+            </MDButton>
+          )}
         </Box>
-
-        {orgData ? (
-          <Grid container spacing={3}>
-            {/* ✅ LEFT SIDE - COMPANY PROFILE */}
-            <Grid item xs={12} md={4}>
-              <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
-                <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
-                  Company Profile
-                </Typography>
-                {editMode ? (
-                  <Box component="form">
-                    <TextField fullWidth label="Name" name="name" value={orgData?.name || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                    <TextField fullWidth label="Domain" name="domain" value={orgData?.domain || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                    <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                    <TextField fullWidth label="Website" name="website" value={orgData?.website || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                    <TextField fullWidth label="Description" name="description" value={orgData?.description || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  </Box>
-                ) : (
-                  Object.entries(orgData || {}).map(([key, value]) => (
-                    <Typography key={key} variant="subtitle1">
-                      <strong>{key.replace("_", " ").toUpperCase()}:</strong> {value || "N/A"}
-                    </Typography>
-                  ))
-                )}
-              </Card>
-            </Grid>
-
-            {/* ✅ RIGHT SIDE - TABS & ANALYTICS */}
-            <Grid item xs={12} md={8}>
-              <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
-                <Tabs value={value} onChange={handleChange} variant="fullWidth">
-                  <Tab label="Subscriptions" />
-                  <Tab label="Analytics" />
-                </Tabs>
-                <CardContent>
-                  <Typography variant="body1">🔹 Additional Organization Details</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        ) : (
-          <Typography variant="h6" color="error" align="center">
-            ❌ No Organization Selected
-          </Typography>
-        )}
       </Box>
-    </Modal>
-  );
+
+      {/* 🚀 Add organization details here */}
+      {orgData ? (
+        <Grid container spacing={3}>
+          {/* ✅ LEFT SIDE - COMPANY PROFILE */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
+              <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
+                Company Profile
+              </Typography>
+              {editMode ? (
+                <Box component="form">
+                  <TextField fullWidth label="Name" name="name" value={orgData?.name || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                  <TextField fullWidth label="Domain" name="domain" value={orgData?.domain || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                  <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                </Box>
+              ) : (
+                <Box>
+                  <Typography variant="subtitle1"><strong>Name:</strong> {orgData?.name || "N/A"}</Typography>
+                  <Typography variant="subtitle1"><strong>Domain:</strong> {orgData?.domain || "N/A"}</Typography>
+                  <Typography variant="subtitle1"><strong>Phone:</strong> {orgData?.phone || "N/A"}</Typography>
+                </Box>
+              )}
+            </Card>
+          </Grid>
+
+          {/* ✅ RIGHT SIDE - TABS & ANALYTICS */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
+              <Tabs value={value} onChange={handleChange} variant="fullWidth">
+                <Tab label="Subscriptions" />
+                <Tab label="Analytics" />
+              </Tabs>
+              <CardContent>
+                <Typography variant="body1">🔹 Additional Organization Details</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      ) : (
+        <Typography variant="h6" color="error" align="center">
+          ❌ No Organization Selected
+        </Typography>
+      )}
+    </Box>
+  </Modal>
+);
+
 };
 
 export default OrganizationDetailsModal;
