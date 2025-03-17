@@ -67,17 +67,6 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
   const [industries, setIndustries] = useState([]);
   const [orgSizes, setOrgSizes] = useState([]);
 
-  // Ensure we have the org id in our local state.
-  useEffect(() => {
-    console.log("Modal received organization prop:", organization);
-    // If organization doesn't have an id but user has organization_id, merge it in.
-    if (organization && !organization.id && user?.organization_id) {
-      setOrgData({ ...organization, id: user.organization_id });
-    } else {
-      setOrgData(organization);
-    }
-  }, [organization, user]);
-
   // Fetch dropdown data
   useEffect(() => {
     if (!authToken) return;
@@ -98,12 +87,13 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     fetchDropdownData();
   }, [authToken]);
 
-  useEffect(() => {
+useEffect(() => {
   if (organization && organization.id) {
     console.log("✅ Selected organization:", organization);
     setOrgData({ ...organization }); // ✅ Always use the selected organization
   }
 }, [organization]);
+
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
