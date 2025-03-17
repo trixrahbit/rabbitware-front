@@ -17,7 +17,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteIcon from "@mui/icons-material/Delete";
 import MDButton from "../../../../../components/MDButton";
 import { useAuth } from "../../../../../context/AuthContext";
 
@@ -140,6 +139,7 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
         </Box>
 
         <Grid container spacing={3}>
+          {/* ✅ LEFT SIDE - COMPANY PROFILE */}
           <Grid item xs={12} md={4}>
             <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
               <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
@@ -160,6 +160,19 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
                   </Typography>
                 ))
               )}
+            </Card>
+          </Grid>
+
+          {/* ✅ RIGHT SIDE - TABS & ANALYTICS */}
+          <Grid item xs={12} md={8}>
+            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
+              <Tabs value={value} onChange={handleChange} variant="fullWidth">
+                <Tab label="Subscriptions" />
+                <Tab label="Analytics" />
+              </Tabs>
+              <CardContent>
+                <Typography variant="body1">🔹 Additional Organization Details</Typography>
+              </CardContent>
             </Card>
           </Grid>
         </Grid>
