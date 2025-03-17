@@ -36,25 +36,6 @@ const style = {
   maxHeight: "90%",
 };
 
-// 🎨 Styled Card Component
-const StyledCard = ({ title, children }) => (
-  <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
-    <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
-      {title}
-    </Typography>
-    {children}
-  </Card>
-);
-
-// 🎨 Tab Panel Component
-function TabPanel({ children, value, index }) {
-  return (
-    <div role="tabpanel" hidden={value !== index} style={{ width: "100%" }}>
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganizations }) => {
   const { authToken, user } = useAuth();
   const [value, setValue] = useState(0);
@@ -62,38 +43,13 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
   const [orgData, setOrgData] = useState(organization);
   const [loading, setLoading] = useState(false);
 
-  // Dropdown Data
-  const [orgTypes, setOrgTypes] = useState([]);
-  const [industries, setIndustries] = useState([]);
-  const [orgSizes, setOrgSizes] = useState([]);
-
-  // Fetch dropdown data
+  // ✅ Always use the selected organization without overwriting with the logged-in user's ID
   useEffect(() => {
-    if (!authToken) return;
-    const fetchDropdownData = async () => {
-      try {
-        const [typesRes, industriesRes, sizesRes] = await Promise.all([
-          axios.get("https://app.webitservices.com/api/org_types", { headers: { Authorization: `Bearer ${authToken}` } }),
-          axios.get("https://app.webitservices.com/api/industries", { headers: { Authorization: `Bearer ${authToken}` } }),
-          axios.get("https://app.webitservices.com/api/org_sizes", { headers: { Authorization: `Bearer ${authToken}` } }),
-        ]);
-        setOrgTypes(typesRes.data);
-        setIndustries(industriesRes.data);
-        setOrgSizes(sizesRes.data);
-      } catch (error) {
-        console.error("❌ Error fetching dropdown data:", error);
-      }
-    };
-    fetchDropdownData();
-  }, [authToken]);
-
-useEffect(() => {
-  if (organization && organization.id) {
-    console.log("✅ Selected organization:", organization);
-    setOrgData({ ...organization }); // ✅ Always use the selected organization
-  }
-}, [organization]);
-
+    if (organization && organization.id) {
+      console.log("✅ Selected organization:", organization);
+      setOrgData({ ...organization });
+    }
+  }, [organization]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -105,77 +61,51 @@ useEffect(() => {
   };
 
   const handleSave = async () => {
-  console.log("🔹 Saving organization via POST:", orgData);
+    console.log("🔹 Saving organization:", orgData);
 
-  if (!orgData?.id) {
-    console.error("❌ ERROR: Missing Organization ID");
-    return;
-  }
+    if (!orgData?.id) {
+      console.error("❌ ERROR: Missing Organization ID");
+      return;
+    }
 
-  // ✅ Ensure we only send the logged-in user's organization ID for permissions, not for updating
-  const superAdminOrgId = user?.organization_id || null;
-  if (!superAdminOrgId) {
-    console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
-    return;
-  }
+    // ✅ Ensure the logged-in user's organization ID is available for permission checks
+    const superAdminOrgId = user?.organization_id;
+    if (!superAdminOrgId) {
+      console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
+      return;
+    }
 
-  // ✅ Ensure the selected organization's ID is being updated
-  const payload = {
-    ...Object.fromEntries(
+    // ✅ Prepare the payload with only the necessary fields
+    const payload = Object.fromEntries(
       Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
-    ),
-    super_admin_org_id: superAdminOrgId, // ✅ Only for permissions check
-  };
-
-  console.log("📡 POST Request Payload:", payload);
-  console.log(`📌 POST URL: https://app.webitservices.com/api/organizations/${orgData.id}`);
-
-  setLoading(true);
-  try {
-    await axios.post(
-      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Always use the selected organization ID
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      }
     );
 
-    console.log("✅ Organization updated successfully");
+    console.log("📡 POST Request Payload:", payload);
+    console.log(`📌 POST URL: https://app.webitservices.com/api/organizations/${orgData.id}`);
 
-    // ✅ Refresh the organization list after saving
-    await refreshOrganizations();
-
-    // ✅ Close the modal after update
-    onClose();
-  } catch (error) {
-    console.error("❌ ERROR saving organization:", error.response?.data || error.message);
-  }
-  setLoading(false);
-};
-
-
-
-
-
-
-
-
-  const handleDelete = async () => {
-    if (!orgData?.id) return;
-    if (!window.confirm("Are you sure you want to delete this organization?")) return;
     setLoading(true);
     try {
-      await axios.delete(
-        `https://app.webitservices.com/api/organizations/${orgData.id}`,
-        { headers: { Authorization: `Bearer ${authToken}` } }
+      await axios.post(
+        `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Uses correct org ID
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+            "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Send permission check in headers
+          },
+        }
       );
+
+      console.log("✅ Organization updated successfully");
+
+      // ✅ Refresh the organization list after saving
+      await refreshOrganizations();
+
+      // ✅ Close the modal after update
       onClose();
-      refreshOrganizations();
     } catch (error) {
-      console.error("❌ Error deleting organization:", error);
+      console.error("❌ ERROR saving organization:", error.response?.data || error.message);
     }
     setLoading(false);
   };
@@ -206,74 +136,22 @@ useEffect(() => {
                 Edit
               </MDButton>
             )}
-            <MDButton variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDelete} disabled={loading} sx={{ ml: 1 }}>
-              Delete Organization
-            </MDButton>
           </Box>
         </Box>
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <StyledCard title="Company Profile">
+            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
+              <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
+                Company Profile
+              </Typography>
               {editMode ? (
                 <Box component="form">
                   <TextField fullWidth label="Name" name="name" value={orgData?.name || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
                   <TextField fullWidth label="Domain" name="domain" value={orgData?.domain || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Website" name="website" value={orgData?.website || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Revenue" name="revenue" value={orgData?.revenue || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Founded" name="founded" value={orgData?.founded || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Type" name="type" value={orgData?.type || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Description" name="description" value={orgData?.description || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-
-                  <TextField
-                    fullWidth
-                    select
-                    label="Industry"
-                    name="industry"
-                    value={orgData?.industry || ""}
-                    onChange={handleInputChange}
-                    sx={{ mb: 2 }}
-                    InputLabelProps={{ shrink: true }}
-                    SelectProps={{
-                      sx: {
-                        height: "40px",
-                        "& .MuiSelect-select": { paddingTop: "16px", paddingBottom: "16px" },
-                      },
-                    }}
-                  >
-                    {industries.map((industry) => (
-                      <MenuItem key={industry.id} value={industry.name}>
-                        {industry.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    fullWidth
-                    select
-                    label="Size"
-                    name="size"
-                    value={orgData?.size || ""}
-                    onChange={handleInputChange}
-                    sx={{ mb: 2 }}
-                    InputLabelProps={{ shrink: true }}
-                    SelectProps={{
-                      sx: {
-                        height: "40px",
-                        "& .MuiSelect-select": { paddingTop: "16px", paddingBottom: "16px" },
-                      },
-                    }}
-                  >
-                    {orgSizes.map((size) => (
-                      <MenuItem key={size.id} value={size.name}>
-                        {size.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField fullWidth label="Logo" name="logo" value={orgData?.logo || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
-                  <TextField fullWidth label="Creator ID" name="creator_id" value={orgData?.creator_id || ""} onChange={handleInputChange} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                  <TextField fullWidth label="Website" name="website" value={orgData?.website || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                  <TextField fullWidth label="Description" name="description" value={orgData?.description || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
                 </Box>
               ) : (
                 Object.entries(orgData || {}).map(([key, value]) => (
@@ -282,23 +160,6 @@ useEffect(() => {
                   </Typography>
                 ))
               )}
-            </StyledCard>
-          </Grid>
-
-          <Grid item xs={12} md={8}>
-            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
-              <Tabs value={value} onChange={handleChange} variant="fullWidth">
-                <Tab label="Subscriptions" />
-                <Tab label="Analytics" />
-              </Tabs>
-              <CardContent>
-                <TabPanel value={value} index={0}>
-                  <Typography variant="body1">🔹 List of Subscriptions</Typography>
-                </TabPanel>
-                <TabPanel value={value} index={1}>
-                  <Typography variant="body1">🔹 Analytics Overview</Typography>
-                </TabPanel>
-              </CardContent>
             </Card>
           </Grid>
         </Grid>
