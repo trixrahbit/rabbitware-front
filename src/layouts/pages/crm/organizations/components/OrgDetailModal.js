@@ -59,55 +59,62 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     setOrgData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async () => {
-    console.log("🔹 Saving organization:", orgData);
+const handleSave = async () => {
+  console.log("🔹 Saving organization:", orgData);
 
-    if (!orgData?.id) {
-      console.error("❌ ERROR: Missing Organization ID");
-      return;
-    }
+  if (!orgData?.id) {
+    console.error("❌ ERROR: Missing selected Organization ID");
+    alert("Organization ID is missing! Please select an organization before saving.");
+    return;
+  }
 
-    // ✅ Ensure the logged-in user's organization ID is available for permission checks
-    const superAdminOrgId = user?.organization_id;
-    if (!superAdminOrgId) {
-      console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
-      return;
-    }
+  // ✅ Ensure the logged-in user's organization ID is available for permission checks
+  const superAdminOrgId = user?.organization_id;
+  if (!superAdminOrgId) {
+    console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
+    alert("Your organization ID is missing! Please log in again.");
+    return;
+  }
 
-    // ✅ Prepare the payload with only the necessary fields
-    const payload = Object.fromEntries(
-      Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
+  // ✅ Prepare the payload with only the necessary fields (excluding nulls and IDs)
+  const payload = Object.fromEntries(
+    Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
+  );
+
+  console.log("📡 Sending update request for Organization ID:", orgData.id);
+  console.log("📌 Sending logged-in user's Organization ID:", superAdminOrgId);
+
+  setLoading(true);
+  try {
+    await axios.post(
+      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Updates selected organization
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+          "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Used for permission check
+        },
+      }
     );
 
-    console.log("📡 POST Request Payload:", payload);
-    console.log(`📌 POST URL: https://app.webitservices.com/api/organizations/${orgData.id}`);
+    console.log("✅ Organization updated successfully");
 
-    setLoading(true);
-    try {
-      await axios.post(
-        `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Uses correct org ID
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-            "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Send permission check in headers
-          },
-        }
-      );
+    // ✅ Exit edit mode
+    setEditMode(false);
 
-      console.log("✅ Organization updated successfully");
+    // ✅ Refresh the organization list after saving
+    await refreshOrganizations();
 
-      // ✅ Refresh the organization list after saving
-      await refreshOrganizations();
+    // ✅ Close the modal after update
+    onClose();
+  } catch (error) {
+    console.error("❌ ERROR saving organization:", error.response?.data || error.message);
+  }
+  setLoading(false);
+};
 
-      // ✅ Close the modal after update
-      onClose();
-    } catch (error) {
-      console.error("❌ ERROR saving organization:", error.response?.data || error.message);
-    }
-    setLoading(false);
-  };
+
 
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="organization-details-modal">

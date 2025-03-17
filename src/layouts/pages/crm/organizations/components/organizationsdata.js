@@ -29,7 +29,7 @@ const OrganizationsData = () => {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  // Fetch organizations
+  // ✅ Fetch organizations function
   const fetchOrganizations = async () => {
     if (!authToken) return;
     setLoading(true);
@@ -44,99 +44,92 @@ const OrganizationsData = () => {
     setLoading(false);
   };
 
+  // ✅ Fetch organizations on initial load
   useEffect(() => {
     fetchOrganizations();
   }, [authToken]);
 
-  // Handle adding a new organization
-  const handleSaveOrg = async (orgData) => {
-    try {
-      await axios.post(`https://app.webitservices.com/api/organizations`, orgData, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      fetchOrganizations();
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("❌ Error saving organization:", error.response?.data || error.message);
-    }
+  // ✅ Refresh organizations list when the details modal closes
+  const handleModalClose = () => {
+    setDetailsModalOpen(false);
+    setSelectedOrg(null);
+    fetchOrganizations(); // ✅ Refresh list after closing the modal
   };
-
-  // Filter organizations based on search
-  const filteredOrganizations = useMemo(
-    () => organizations.filter((org) => org.name.toLowerCase().includes(searchQuery.toLowerCase())),
-    [organizations, searchQuery]
-  );
 
   return (
     <MDBox p={3}>
+      <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        {/* ✅ Search Bar */}
+        <TextField
+          placeholder="Search Organizations"
+          variant="outlined"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            backgroundColor: "background.paper",
+            borderRadius: "8px",
+            "&:hover": { backgroundColor: "background.default" },
+            maxWidth: "250px", // ✅ Properly sized
+          }}
+        />
+
+        {/* ✅ Filter & Add Organization Buttons */}
+        <MDBox display="flex" gap={1}>
+          <MDButton variant="outlined" color="secondary" startIcon={<FilterListIcon />}>
+            Filter
+          </MDButton>
+          <MDButton
+            variant="contained"
+            color="info"
+            startIcon={<AddIcon />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add Organization
+          </MDButton>
+        </MDBox>
+      </MDBox>
+
       {/* ✅ Organizations Data Table */}
       <DataTable
         table={{
           columns: orgColumns,
-          rows: filteredOrganizations.map((org) => ({
-            ...org,
-            name: (
-              <MDTypography
-                variant="button"
-                color="primary"
-                sx={{ cursor: "pointer", textDecoration: "none" }}
-                onClick={() => {
-                  setSelectedOrg(org);
-                  setDetailsModalOpen(true);
-                }}
-              >
-                {org.name}
-              </MDTypography>
-            ),
-          })),
+          rows: organizations
+            .filter((org) => org.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .map((org) => ({
+              ...org,
+              name: (
+                <MDTypography
+                  variant="button"
+                  color="primary"
+                  sx={{ cursor: "pointer", textDecoration: "none" }}
+                  onClick={() => {
+                    setSelectedOrg({ ...org }); // ✅ Ensure latest org data before opening modal
+                    setDetailsModalOpen(true);
+                  }}
+                >
+                  {org.name}
+                </MDTypography>
+              ),
+            })),
         }}
         isLoading={loading}
         entriesPerPage={{ defaultValue: 10, options: [10, 25, 50, 100] }}
         showTotalEntries
-        customHeader={(
-          <MDBox display="flex" justifyContent="space-between" alignItems="center" width="100%">
-            {/* ✅ Center: Search Bar & Filter */}
-            <MDBox display="flex" alignItems="center" gap={2} justifyContent="center" flexGrow={1}>
-              <TextField
-                placeholder="Search Organizations"
-                variant="outlined"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  backgroundColor: "background.paper",
-                  borderRadius: "8px",
-                  "&:hover": { backgroundColor: "background.default" },
-                  maxWidth: "250px", // ✅ Properly sized
-                }}
-              />
-              <MDButton variant="outlined" color="secondary" startIcon={<FilterListIcon />}>
-                Filter
-              </MDButton>
-            </MDBox>
-
-
-          </MDBox>
-        )}
       />
 
       {/* ✅ Modals */}
-      {isModalOpen && <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveOrg} />}
+      {isModalOpen && (
+        <AddOrgModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={fetchOrganizations} />
+      )}
       {detailsModalOpen && selectedOrg && (
-        <OrgDetailModal
-          open={detailsModalOpen}
-          onClose={() => {
-            setDetailsModalOpen(false);
-            setSelectedOrg(null);
-          }}
-          organization={selectedOrg}
-        />
+        <OrgDetailModal open={detailsModalOpen} onClose={handleModalClose} organization={selectedOrg} refreshOrganizations={fetchOrganizations} />
       )}
     </MDBox>
   );
