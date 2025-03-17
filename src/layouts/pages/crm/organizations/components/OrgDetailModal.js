@@ -110,6 +110,7 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
 const handleSave = async () => {
   console.log("🔹 Saving organization via POST:", orgData);
 
+  // ✅ Ensure we're using the ID of the organization being edited
   const orgId = orgData?.id || organization?.id;
   if (!orgId) {
     console.error("❌ ERROR: Missing Organization ID");
@@ -126,7 +127,7 @@ const handleSave = async () => {
   setLoading(true);
   try {
     const response = await axios.post(
-      `https://app.webitservices.com/api/organizations/${orgId}`,  // ✅ POST instead of PATCH
+      `https://app.webitservices.com/api/organizations/${orgId}`, // ✅ Uses selected organization's ID
       payload,
       {
         headers: {
@@ -137,8 +138,12 @@ const handleSave = async () => {
     );
 
     console.log("✅ Organization saved successfully:", response.data);
-    setEditMode(false);
-    refreshOrganizations();
+
+    // ✅ Refresh the organizations list
+    await refreshOrganizations();
+
+    // ✅ Close modal after successful update
+    onClose();
   } catch (error) {
     console.error("❌ ERROR saving organization:", error.response?.data || error.message);
     if (error.response) {
@@ -147,6 +152,8 @@ const handleSave = async () => {
   }
   setLoading(false);
 };
+
+
 
 
 
