@@ -97,7 +97,8 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     };
     fetchDropdownData();
   }, [authToken]);
-useEffect(() => {
+
+  useEffect(() => {
   if (organization && organization.id) {
     console.log("✅ Selected organization:", organization);
     setOrgData({ ...organization }); // ✅ Always use the selected organization
@@ -113,7 +114,7 @@ useEffect(() => {
     setOrgData((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSave = async () => {
+  const handleSave = async () => {
   console.log("🔹 Saving organization via POST:", orgData);
 
   if (!orgData?.id) {
@@ -121,12 +122,19 @@ const handleSave = async () => {
     return;
   }
 
-  // ✅ Payload to update the selected organization
+  // ✅ Ensure we only send the logged-in user's organization ID for permissions, not for updating
+  const superAdminOrgId = user?.organization_id || null;
+  if (!superAdminOrgId) {
+    console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
+    return;
+  }
+
+  // ✅ Ensure the selected organization's ID is being updated
   const payload = {
     ...Object.fromEntries(
       Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
     ),
-    super_admin_org_id: user.organization_id // ✅ Send logged-in user's org ID for permissions
+    super_admin_org_id: superAdminOrgId, // ✅ Only for permissions check
   };
 
   console.log("📡 POST Request Payload:", payload);
@@ -135,7 +143,7 @@ const handleSave = async () => {
   setLoading(true);
   try {
     await axios.post(
-      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Ensure correct org ID is used
+      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Always use the selected organization ID
       payload,
       {
         headers: {
@@ -147,7 +155,7 @@ const handleSave = async () => {
 
     console.log("✅ Organization updated successfully");
 
-    // ✅ Refresh organizations after saving
+    // ✅ Refresh the organization list after saving
     await refreshOrganizations();
 
     // ✅ Close the modal after update
@@ -157,6 +165,7 @@ const handleSave = async () => {
   }
   setLoading(false);
 };
+
 
 
 
