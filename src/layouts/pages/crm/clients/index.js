@@ -50,7 +50,7 @@ const ClientsPage = () => {
                 <MDTypography
                   variant="h3"
                   fontWeight="bold"
-                  color="textPrimary"
+                  color="primary"
                   sx={{
                     fontFamily: `"Poppins", sans-serif`,
                     background: "linear-gradient(to right, #2E7D32, #66BB6A)", // Green Gradient
@@ -63,7 +63,7 @@ const ClientsPage = () => {
                 </MDTypography>
                 <MDTypography
                   variant="body1"
-                  color="textSecondary"
+                  color="secondary"
                   sx={{ fontSize: "16px", fontWeight: 500 }}
                 >
                   View, manage, and track client relationships effortlessly.

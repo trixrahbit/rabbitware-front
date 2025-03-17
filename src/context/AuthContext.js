@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-
 const AuthContext = createContext();
 
 const initialAuthState = {
   authToken: sessionStorage.getItem("authToken") || null,
-  user: JSON.parse(sessionStorage.getItem("user") || "{}"), // ✅ Prevent JSON.parse(null) error
+  // Use an empty object if nothing is in session storage.
+  user: JSON.parse(sessionStorage.getItem("user") || "{}"),
   isAuthenticated: !!sessionStorage.getItem("authToken"),
 };
 
@@ -17,11 +17,11 @@ const authActionTypes = {
 const isTokenExpired = (token) => {
   try {
     const decoded = jwtDecode(token);
-    if (!decoded.exp) return false; // No expiration, assume valid
-    return decoded.exp * 1000 < Date.now(); // Exp is in seconds, JS uses ms
+    if (!decoded.exp) return false;
+    return decoded.exp * 1000 < Date.now();
   } catch (error) {
     console.error("❌ Failed to decode token:", error);
-    return true; // If decoding fails, assume it's invalid
+    return true;
   }
 };
 
@@ -51,7 +51,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log("🔍 Auth Token:", state.authToken);
     console.log("🔍 User Data:", state.user);
-    console.log("🔍 Organization ID:", state.user?.organization_id);
+    // With flattened user, the org id is directly available
+    console.log("🔍 Organization ID:", state.user.organization_id);
 
     if (state.authToken && isTokenExpired(state.authToken)) {
       console.warn("🚨 Token expired! Logging out...");
@@ -63,10 +64,18 @@ export const AuthProvider = ({ children }) => {
     setNavigateFunction(() => navigate);
   };
 
+  // Transform the user object to include a flat organization_id property.
   const login = (authToken, user, navigate) => {
     console.log("🔓 Logging in user:", user);
     setNavigate(navigate);
-    dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user } });
+
+    // Transform the user to flatten the organization ID.
+    const transformedUser = {
+      ...user,
+      organization_id: user.organization?.id, // Flatten the org id
+    };
+
+    dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user: transformedUser } });
   };
 
   const logout = () => {

@@ -14,14 +14,7 @@ const crmRoutes = [
     key: "clients",
     icon: <Icon fontSize="medium">people</Icon>,
     collapse: [
-      {
-        name: "Client Overview",
-        key: "client-overview",
-        route: "/pages/crm/clients",
-        component: <ClientsData />,
-        protected: true,
-      },
-      {
+        {
         name: "Organizations",
         key: "organizations",
         route: "/pages/crm/organizations",
@@ -29,6 +22,14 @@ const crmRoutes = [
         protected: true,
         requiresSuperAdmin: true, // ✅ Restrict this route
       },
+      {
+        name: "Client Overview",
+        key: "client-overview",
+        route: "/pages/crm/clients",
+        component: <ClientsData />,
+        protected: true,
+      },
+
     ],
   },
 ];

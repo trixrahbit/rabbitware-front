@@ -5,8 +5,10 @@ import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
+import { useAuth } from "../../../../../../context/AuthContext";
 
 const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
+  const { authToken, organization } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -26,57 +28,80 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
     priorities: [],
     impacts: [],
     statuses: [],
-    slaConditions: [],
-    queues: [],
-    billingAgreements: [],
-    contacts: [],
   });
 
+  // ✅ Debug Step 1: Check if useEffect runs
   useEffect(() => {
-    if (!open) return;
+    console.log("🔥 useEffect triggered! open:", open, "organization:", organization);
+
+    if (!open) {
+      console.log("❌ Modal is closed. Exiting...");
+      return;
+    }
+
+    if (!organization?.id) {
+      console.error("❌ Organization ID is missing!");
+      return;
+    }
+
+    if (!authToken) {
+      console.error("❌ Auth Token is missing!");
+      return;
+    }
+
     const fetchDropdowns = async () => {
       try {
-        const responses = await Promise.all([
-          axios.get("https://app.webitservices.com/api/clients"),
-          axios.get("https://app.webitservices.com/api/priorities"),
-          axios.get("https://app.webitservices.com/api/impacts"),
-          axios.get("https://app.webitservices.com/api/statuses"),
-          axios.get("https://app.webitservices.com/api/sla_conditions"),
-          axios.get("https://app.webitservices.com/api/queues"),
-          axios.get("https://app.webitservices.com/api/billing_agreements"),
-          axios.get("https://app.webitservices.com/api/contacts"),
+        const orgId = organization.id;
+        console.log(`🔍 Fetching data for orgId: ${orgId}`);
+
+        const [clientsRes, prioritiesRes, impactsRes, statusesRes] = await Promise.all([
+          axios.get(`https://app.webitservices.com/api/organizations/${orgId}/clients`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }),
+          axios.get("https://app.webitservices.com/api/priorities", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }),
+          axios.get("https://app.webitservices.com/api/impacts", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }),
+          axios.get("https://app.webitservices.com/api/statuses", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }),
         ]);
 
+        console.log("✅ Clients Fetched:", clientsRes.data);
+        console.log("✅ Priorities Fetched:", prioritiesRes.data);
+        console.log("✅ Impacts Fetched:", impactsRes.data);
+        console.log("✅ Statuses Fetched:", statusesRes.data);
+
         setDropdownData({
-          clients: responses[0].data,
-          priorities: responses[1].data,
-          impacts: responses[2].data,
-          statuses: responses[3].data,
-          slaConditions: responses[4].data,
-          queues: responses[5].data,
-          billingAgreements: responses[6].data,
-          contacts: responses[7].data,
+          clients: clientsRes.data || [],
+          priorities: prioritiesRes.data || [],
+          impacts: impactsRes.data || [],
+          statuses: statusesRes.data || [],
         });
       } catch (error) {
-        console.error("Error fetching dropdown data:", error);
+        console.error("❌ Error fetching dropdown data:", error.response?.data || error.message);
       }
     };
 
     fetchDropdowns();
-  }, [open]);
+  }, [open, organization?.id, authToken]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCreateTicket = () => {
-    axios
-      .post("https://app.webitservices.com/api/tickets", formData)
-      .then((response) => {
-        onTicketCreated(response.data);
-        onClose();
-      })
-      .catch((error) => console.error("Error creating ticket:", error));
+  const handleCreateTicket = async () => {
+    try {
+      await axios.post("https://app.webitservices.com/api/tickets", formData, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      onTicketCreated();
+      onClose();
+    } catch (error) {
+      console.error("❌ Error creating ticket:", error.response?.data || error.message);
+    }
   };
 
   return (
@@ -100,23 +125,33 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
         <Grid container spacing={2} mt={2}>
           <Grid item xs={6}>
             <MDInput fullWidth label="Title" name="title" value={formData.title} onChange={handleChange} />
+
             <MDInput
               fullWidth select label="Client" name="client_id"
               value={formData.client_id} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
-              {dropdownData.clients.map((c) => (
-                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-              ))}
+              {dropdownData.clients.length > 0 ? (
+                dropdownData.clients.map((client) => (
+                  <MenuItem key={client.id} value={client.id}>{client.name}</MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No Clients Available</MenuItem>
+              )}
             </MDInput>
+
             <MDInput
               fullWidth select label="Priority" name="priority"
               value={formData.priority} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
-              {dropdownData.priorities.map((p) => (
-                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-              ))}
+              {dropdownData.priorities.length > 0 ? (
+                dropdownData.priorities.map((priority) => (
+                  <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No Priorities Available</MenuItem>
+              )}
             </MDInput>
           </Grid>
 
@@ -124,25 +159,35 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
             <MDInput
               fullWidth select label="Impact" name="impact"
               value={formData.impact} onChange={handleChange}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
-              {dropdownData.impacts.map((i) => (
-                <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>
-              ))}
+              {dropdownData.impacts.length > 0 ? (
+                dropdownData.impacts.map((impact) => (
+                  <MenuItem key={impact.id} value={impact.id}>{impact.name}</MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No Impacts Available</MenuItem>
+              )}
             </MDInput>
+
             <MDInput
               fullWidth select label="Status" name="status"
               value={formData.status} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             >
-              {dropdownData.statuses.map((s) => (
-                <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
-              ))}
+              {dropdownData.statuses.length > 0 ? (
+                dropdownData.statuses.map((status) => (
+                  <MenuItem key={status.id} value={status.id}>{status.name}</MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No Statuses Available</MenuItem>
+              )}
             </MDInput>
+
             <MDInput
               fullWidth label="Due Date" name="due_date" type="date"
               value={formData.due_date} onChange={handleChange} sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
+              InputLabelProps={{ shrink: true }}
             />
           </Grid>
         </Grid>
@@ -151,31 +196,6 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
           fullWidth label="Description" multiline rows={3} name="description"
           value={formData.description} onChange={handleChange} sx={{ mt: 2 }}
         />
-
-        <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item xs={6}>
-            <MDInput
-              fullWidth select label="Billing Agreement" name="billing_agreement_id"
-              value={formData.billing_agreement_id} onChange={handleChange}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
-            >
-              {dropdownData.billingAgreements.map((b) => (
-                <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
-              ))}
-            </MDInput>
-          </Grid>
-          <Grid item xs={6}>
-            <MDInput
-              fullWidth select label="Contact" name="contact_id"
-              value={formData.contact_id} onChange={handleChange}
-              InputLabelProps={{ shrink: true }} // ✅ Fix Label Issue
-            >
-              {dropdownData.contacts.map((c) => (
-                <MenuItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</MenuItem>
-              ))}
-            </MDInput>
-          </Grid>
-        </Grid>
 
         <MDBox display="flex" justifyContent="space-between" mt={3}>
           <MDButton variant="contained" color="success" onClick={handleCreateTicket}>
@@ -191,3 +211,4 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
 };
 
 export default NewTicketModal;
+

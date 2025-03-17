@@ -11,7 +11,7 @@ export const ClientsProvider = ({ children }) => {
 
   useEffect(() => {
     if (!authToken || !user?.organization?.id) {
-      console.warn("⚠️ Missing authToken or organization.id, skipping API call.");
+      console.warn("⚠️ Missing authToken or organization id, skipping API call.");
       return;
     }
 

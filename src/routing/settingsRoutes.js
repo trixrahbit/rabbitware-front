@@ -9,7 +9,7 @@ const settingsRoutes = [
   {
     type: "title",
     title: "Settings",
-    key: "settings",
+    key: "settings-menu",
   },
   {
     type: "collapse",

@@ -1,14 +1,25 @@
-import { useMemo, useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { useTable, usePagination, useGlobalFilter, useSortBy, useRowSelect, useAsyncDebounce } from "react-table";
-import { Table, TableBody, TableContainer, TableRow, Checkbox, Menu, MenuItem } from "@mui/material";
-import { Autocomplete } from "@mui/material";  // ✅ Import Autocomplete from MUI
-import Icon from "@mui/material/Icon";         // ✅ Import Icon from MUI
+import React, { useMemo, useState, useCallback, useEffect } from "react";
+import {
+  useTable,
+  usePagination,
+  useGlobalFilter,
+  useSortBy,
+  useRowSelect,
+} from "react-table";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableRow,
+  Checkbox,
+  Menu,
+  MenuItem,
+  IconButton,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import MDInput from "components/MDInput";
 import MDPagination from "components/MDPagination";
-
 import DataTableHeadCell from "examples/Tables/DataTable/DataTableHeadCell";
 import DataTableBodyCell from "examples/Tables/DataTable/DataTableBodyCell";
 
@@ -21,23 +32,55 @@ function DataTable({
   noEndBorder,
   customHeader,
 }) {
+  // Default entries per page
   const defaultValue = entriesPerPage?.defaultValue || 10;
-  const entries = entriesPerPage?.entries ? entriesPerPage.entries.map((el) => el.toString()) : ["5", "10", "15", "20", "25"];
+  const data = useMemo(() => table.rows, [table.rows]);
 
-  const columns = useMemo(() => [
-    {
-      id: "selection",
-      Header: ({ getToggleAllRowsSelectedProps }) => (
-        <Checkbox {...getToggleAllRowsSelectedProps()} />
-      ),
-      accessor: "selection",
-      width: "5%",
-    },
-    ...table.columns,
-  ], [table.columns]);
+  // Use state so that changes to selection trigger a re-render.
+  const [selectedCount, setSelectedCount] = useState(0);
 
-  const data = useMemo(() => table.rows, [table]);
+  // Stable menu open handlers.
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleMenuOpen = useCallback((event) => {
+    setAnchorEl(event.currentTarget);
+  }, []);
+  const handleMenuClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
 
+  // Create the table instance without including selectedCount in columns.
+  // Instead, update selectedCount separately.
+  const columns = useMemo(
+    () => [
+      {
+        id: "selection",
+        disableSortBy: true, // Disable sorting for this column
+        Header: ({ getToggleAllRowsSelectedProps }) => {
+          const toggleProps = getToggleAllRowsSelectedProps();
+          return (
+            <MDBox display="flex" alignItems="center">
+              <Checkbox
+                {...toggleProps}
+                sx={{ color: selectedCount > 0 ? "green" : "inherit" }}
+              />
+              {selectedCount > 0 && (
+                <IconButton size="small" onClick={handleMenuOpen}>
+                  <MoreVertIcon />
+                </IconButton>
+              )}
+            </MDBox>
+          );
+        },
+        accessor: "selection",
+        width: "5%",
+        Cell: ({ row }) => <Checkbox {...row.getToggleRowSelectedProps()} />,
+      },
+      ...table.columns,
+    ],
+    [table.columns, handleMenuOpen, selectedCount]
+  );
+
+  // Create table instance.
   const tableInstance = useTable(
     { columns, data, initialState: { pageIndex: 0 } },
     useGlobalFilter,
@@ -61,64 +104,71 @@ function DataTable({
     state: { pageIndex, pageSize, selectedRowIds },
   } = tableInstance;
 
-  useEffect(() => setPageSize(defaultValue || 10), [defaultValue]);
+  // Update our selectedCount state whenever selection changes.
+  useEffect(() => {
+    setSelectedCount(Object.keys(selectedRowIds).length);
+  }, [selectedRowIds]);
 
-  const selectedRowsCount = Object.keys(selectedRowIds).length;
+  // Set the page size once.
+  useEffect(() => {
+    setPageSize(defaultValue);
+  }, [defaultValue, setPageSize]);
 
   return (
     <TableContainer sx={{ boxShadow: "none" }}>
-      {/* ✅ Keep only the customHeader (Search & Filter now in ClientsData) */}
+      {/* Optional custom header */}
       <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
-        {/* Bulk Action Menu (Only if rows selected) */}
-        {selectedRowsCount > 0 ? (
-          <Menu open={true} onClose={() => {}}>
-            <MenuItem onClick={() => console.log("Editing selected rows", selectedRowIds)}>Edit</MenuItem>
-            <MenuItem onClick={() => console.log("Deleting selected rows", selectedRowIds)}>Delete</MenuItem>
-          </Menu>
-        ) : (
-          <div />
-        )}
-
-        {/* Right: Custom Header (Search, Filter, Add Button) */}
         {customHeader}
       </MDBox>
 
-      {/* ✅ Table Content */}
+      {/* Main table */}
       <Table {...getTableProps()}>
         <MDBox component="thead">
-          {headerGroups.map((headerGroup, key) => (
-            <TableRow key={key} {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column, idx) => (
-                <DataTableHeadCell
-                  key={idx}
-                  {...column.getHeaderProps(isSorted && column.getSortByToggleProps())}
-                  width={column.width ? column.width : "auto"}
-                  align={column.align ? column.align : "left"}
-                  sorted={isSorted && column.isSorted ? (column.isSortedDesc ? "desc" : "asce") : "none"}
-                >
-                  {column.render("Header")}
-                </DataTableHeadCell>
-              ))}
+          {headerGroups.map((headerGroup) => (
+            <TableRow key={headerGroup.id} {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => {
+                // For the selection column, do not add sort toggle props.
+                const headerProps =
+                  column.id === "selection"
+                    ? column.getHeaderProps()
+                    : column.getHeaderProps(isSorted && column.getSortByToggleProps());
+                return (
+                  <DataTableHeadCell
+                    key={column.id}
+                    {...headerProps}
+                    width={column.width || "auto"}
+                    align={column.align || "left"}
+                    sorted={
+                      column.disableSortBy
+                        ? "none"
+                        : isSorted && column.isSorted
+                        ? column.isSortedDesc
+                          ? "desc"
+                          : "asce"
+                        : "none"
+                    }
+                  >
+                    {column.render("Header")}
+                  </DataTableHeadCell>
+                );
+              })}
             </TableRow>
           ))}
         </MDBox>
+
         <TableBody {...getTableBodyProps()}>
-          {page.map((row, key) => {
+          {page.map((row) => {
             prepareRow(row);
             return (
-              <TableRow key={key} {...row.getRowProps()}>
-                {row.cells.map((cell, idx) => (
+              <TableRow key={row.id} {...row.getRowProps()}>
+                {row.cells.map((cell) => (
                   <DataTableBodyCell
-                    key={idx}
-                    noBorder={noEndBorder && rows.length - 1 === key}
-                    align={cell.column.align ? cell.column.align : "left"}
+                    key={cell.column.id}
+                    noBorder={noEndBorder && row.index === rows.length - 1}
+                    align={cell.column.align || "left"}
                     {...cell.getCellProps()}
                   >
-                    {cell.column.id === "selection" ? (
-                      <Checkbox {...row.getToggleRowSelectedProps()} />
-                    ) : (
-                      cell.render("Cell")
-                    )}
+                    {cell.render("Cell")}
                   </DataTableBodyCell>
                 ))}
               </TableRow>
@@ -127,32 +177,42 @@ function DataTable({
         </TableBody>
       </Table>
 
-      {/* ✅ Pagination */}
+      {/* Pagination */}
       <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
         {showTotalEntries && (
           <MDTypography variant="button" color="secondary">
-            Showing {pageIndex * pageSize + 1} to {Math.min((pageIndex + 1) * pageSize, rows.length)} of {rows.length} entries
+            Showing {pageIndex * pageSize + 1} to{" "}
+            {Math.min((pageIndex + 1) * pageSize, rows.length)} of {rows.length} entries
           </MDTypography>
         )}
 
         <MDBox display="flex" alignItems="center">
-          <Autocomplete
-            disableClearable
-            value={pageSize.toString()}
-            options={entries}
-            onChange={(event, newValue) => setPageSize(parseInt(newValue, 10))}
-            size="small"
-            sx={{ width: "5rem", marginRight: 2 }}
-            renderInput={(params) => <MDInput {...params} />}
-          />
-          <MDTypography variant="caption" color="secondary">entries per page</MDTypography>
-
           <MDPagination variant={pagination?.variant || "gradient"} color={pagination?.color || "info"}>
-            {canPreviousPage && <MDPagination item onClick={() => previousPage()}><Icon>chevron_left</Icon></MDPagination>}
-            {canNextPage && <MDPagination item onClick={() => nextPage()}><Icon>chevron_right</Icon></MDPagination>}
+            {canPreviousPage && (
+              <MDPagination item onClick={() => previousPage()}>
+                <span>chevron_left</span>
+              </MDPagination>
+            )}
+            {canNextPage && (
+              <MDPagination item onClick={() => nextPage()}>
+                <span>chevron_right</span>
+              </MDPagination>
+            )}
           </MDPagination>
         </MDBox>
       </MDBox>
+
+      {/* Bulk Actions Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        <MenuItem onClick={() => console.log("Editing selected", selectedRowIds)}>Edit</MenuItem>
+        <MenuItem onClick={() => console.log("Deleting selected", selectedRowIds)}>Delete</MenuItem>
+      </Menu>
     </TableContainer>
   );
 }

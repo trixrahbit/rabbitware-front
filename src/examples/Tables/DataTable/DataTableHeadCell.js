@@ -1,28 +1,7 @@
-/**
-=========================================================
-* Material Dashboard 2 PRO React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-pro-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
-
-// @mui material components
 import Icon from "@mui/material/Icon";
-
-// Material Dashboard 2 PRO React components
 import MDBox from "components/MDBox";
-
-// Material Dashboard 2 PRO React contexts
+import MDTypography from "components/MDTypography";
 import { useMaterialUIController } from "context";
 
 function DataTableHeadCell({ width, children, sorted, align, ...rest }) {
@@ -49,12 +28,12 @@ function DataTableHeadCell({ width, children, sorted, align, ...rest }) {
           fontSize: size.xxs,
           fontWeight: fontWeightBold,
           textTransform: "uppercase",
-          cursor: sorted && "pointer",
-          userSelect: sorted && "none",
+          cursor: sorted !== "none" ? "pointer" : "default",
+          userSelect: sorted !== "none" ? "none" : "auto",
         })}
       >
         {children}
-        {sorted && (
+        {sorted !== "none" && (
           <MDBox
             position="absolute"
             top={0}
@@ -87,14 +66,12 @@ function DataTableHeadCell({ width, children, sorted, align, ...rest }) {
   );
 }
 
-// Setting default values for the props of DataTableHeadCell
 DataTableHeadCell.defaultProps = {
   width: "auto",
   sorted: "none",
   align: "left",
 };
 
-// Typechecking props for the DataTableHeadCell
 DataTableHeadCell.propTypes = {
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.node.isRequired,

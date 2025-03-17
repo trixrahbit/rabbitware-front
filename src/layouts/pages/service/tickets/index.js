@@ -51,7 +51,7 @@ const Tickets = () => {
                 <MDTypography
                   variant="h3"
                   fontWeight="bold"
-                  color="textPrimary"
+                  color="primary"
                   sx={{
                     fontFamily: `"Poppins", sans-serif`,
                     background: "linear-gradient(to right, #2E7D32, #66BB6A)", // Green Gradient
