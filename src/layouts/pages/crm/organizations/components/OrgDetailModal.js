@@ -97,6 +97,12 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     };
     fetchDropdownData();
   }, [authToken]);
+useEffect(() => {
+  if (organization && organization.id) {
+    console.log("✅ Selected organization:", organization);
+    setOrgData({ ...organization }); // ✅ Always use the selected organization
+  }
+}, [organization]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -110,24 +116,26 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
 const handleSave = async () => {
   console.log("🔹 Saving organization via POST:", orgData);
 
-  // ✅ Ensure we're using the ID of the organization being edited
-  const orgId = orgData?.id || organization?.id;
-  if (!orgId) {
+  if (!orgData?.id) {
     console.error("❌ ERROR: Missing Organization ID");
     return;
   }
 
-  const payload = Object.fromEntries(
-    Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
-  );
+  // ✅ Payload to update the selected organization
+  const payload = {
+    ...Object.fromEntries(
+      Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
+    ),
+    super_admin_org_id: user.organization_id // ✅ Send logged-in user's org ID for permissions
+  };
 
   console.log("📡 POST Request Payload:", payload);
-  console.log(`📌 POST URL: https://app.webitservices.com/api/organizations/${orgId}`);
+  console.log(`📌 POST URL: https://app.webitservices.com/api/organizations/${orgData.id}`);
 
   setLoading(true);
   try {
-    const response = await axios.post(
-      `https://app.webitservices.com/api/organizations/${orgId}`, // ✅ Uses selected organization's ID
+    await axios.post(
+      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Ensure correct org ID is used
       payload,
       {
         headers: {
@@ -137,21 +145,19 @@ const handleSave = async () => {
       }
     );
 
-    console.log("✅ Organization saved successfully:", response.data);
+    console.log("✅ Organization updated successfully");
 
-    // ✅ Refresh the organizations list
+    // ✅ Refresh organizations after saving
     await refreshOrganizations();
 
-    // ✅ Close modal after successful update
+    // ✅ Close the modal after update
     onClose();
   } catch (error) {
     console.error("❌ ERROR saving organization:", error.response?.data || error.message);
-    if (error.response) {
-      console.error("📌 Server Response:", error.response.status, error.response.data);
-    }
   }
   setLoading(false);
 };
+
 
 
 
