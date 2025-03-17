@@ -1,4 +1,4 @@
-// react-routers components
+// react-router components
 import { Link } from "react-router-dom";
 
 // prop-types is library for typechecking of props
@@ -24,12 +24,11 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
   const { socialMediaColors } = colors;
   const { size } = typography;
 
-  // Convert this form `objectKey` of the object key in to this `object key`
+  // Convert object keys (camelCase) into readable text
   Object.keys(info).forEach((el) => {
     if (el.match(/[A-Z\s]+/)) {
       const uppercaseLetter = Array.from(el).find((i) => i.match(/[A-Z]+/));
       const newElement = el.replace(uppercaseLetter, ` ${uppercaseLetter.toLowerCase()}`);
-
       labels.push(newElement);
     } else {
       labels.push(el);
@@ -39,18 +38,17 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
   // Push the object values into the values array
   Object.values(info).forEach((el) => values.push(el));
 
-  // Render the card info items
+  // Render the card info items with fallback values
   const renderItems = labels.map((label, key) => (
     <MDBox key={label} display="flex" py={1} pr={2}>
       <MDTypography variant="button" fontWeight="bold" textTransform="capitalize">
         {label}: &nbsp;
       </MDTypography>
       <MDTypography variant="button" fontWeight="regular" color="text">
-        &nbsp;{values[key]}
+        &nbsp;{values[key] ?? "N/A"} {/* ✅ Ensure no missing values */}
       </MDTypography>
     </MDBox>
   ));
-
 
   return (
     <Card sx={{ height: "100%", boxShadow: !shadow && "none" }}>
@@ -58,47 +56,53 @@ function ProfileInfoCard({ title, description, info, social, action, shadow }) {
         <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
           {title}
         </MDTypography>
-        <MDTypography component={Link} to={action.route} variant="body2" color="secondary">
-          <Tooltip title={action.tooltip} placement="top">
-            <Icon>edit</Icon>
-          </Tooltip>
-        </MDTypography>
+
+        {/* ✅ Only render if action exists */}
+        {action?.route && action?.tooltip ? (
+          <MDTypography component={Link} to={action.route} variant="body2" color="secondary">
+            <Tooltip title={action.tooltip} placement="top">
+              <Icon>edit</Icon>
+            </Tooltip>
+          </MDTypography>
+        ) : null}
       </MDBox>
+
       <MDBox p={2}>
+        {/* ✅ Ensure description is always present */}
         <MDBox mb={2} lineHeight={1}>
           <MDTypography variant="button" color="text" fontWeight="light">
-            {description}
+            {description || "No description available"}
           </MDTypography>
         </MDBox>
+
         <MDBox opacity={0.3}>
           <Divider />
         </MDBox>
-        <MDBox>
-          {renderItems}
-          <MDBox display="flex" py={1} pr={2}>
-            <MDTypography variant="button" fontWeight="bold" textTransform="capitalize">
-            </MDTypography>
-          </MDBox>
-        </MDBox>
+
+        <MDBox>{renderItems}</MDBox>
       </MDBox>
     </Card>
   );
 }
 
-// Setting default props for the ProfileInfoCard
+// ✅ Default props to prevent missing values
 ProfileInfoCard.defaultProps = {
   shadow: true,
+  title: "Profile Details",
+  description: "No description available",
+  info: {},
+  action: null, // ✅ Make `action` optional
 };
 
-// Typechecking props for the ProfileInfoCard
+// ✅ Typechecking for props
 ProfileInfoCard.propTypes = {
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  info: PropTypes.objectOf(PropTypes.string).isRequired,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  info: PropTypes.objectOf(PropTypes.string),
   action: PropTypes.shape({
-    route: PropTypes.string.isRequired,
-    tooltip: PropTypes.string.isRequired,
-  }).isRequired,
+    route: PropTypes.string,
+    tooltip: PropTypes.string,
+  }),
   shadow: PropTypes.bool,
 };
 

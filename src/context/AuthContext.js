@@ -14,16 +14,21 @@ const authActionTypes = {
   LOGOUT: "LOGOUT",
 };
 
-const isTokenExpired = (token) => {
+const isTokenExpired = (token, sessionTimeout) => {
   try {
     const decoded = jwtDecode(token);
     if (!decoded.exp) return false;
-    return decoded.exp * 1000 < Date.now();
+
+    const expirationTime = decoded.exp * 1000; // Convert to milliseconds
+    const sessionLimit = sessionTimeout ? sessionTimeout * 60 * 1000 : 30 * 60 * 1000; // Default: 30 minutes
+
+    return expirationTime < Date.now() - sessionLimit; // ✅ Compare against user's session timeout
   } catch (error) {
     console.error("❌ Failed to decode token:", error);
     return true;
   }
 };
+
 
 const authReducer = (state, action) => {
   switch (action.type) {
@@ -33,50 +38,55 @@ const authReducer = (state, action) => {
       return {
         ...state,
         authToken: action.payload.authToken,
-        user: action.payload.user,
+        user: action.payload.user || {}, // ✅ Ensure user is never null
         isAuthenticated: true,
       };
     case authActionTypes.LOGOUT:
-      sessionStorage.clear();
-      return { authToken: null, user: null, isAuthenticated: false };
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("user");
+      return { authToken: null, user: {}, isAuthenticated: false }; // ✅ Set user to {}
     default:
       return state;
   }
 };
 
+
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
   const [navigateFunction, setNavigateFunction] = useState(null);
 
-  useEffect(() => {
-    console.log("🔍 Auth Token:", state.authToken);
-    console.log("🔍 User Data:", state.user);
-    // With flattened user, the org id is directly available
-    console.log("🔍 Organization ID:", state.user.organization_id);
+useEffect(() => {
+  console.log("🔍 Checking token expiration...");
 
-    if (state.authToken && isTokenExpired(state.authToken)) {
+  if (state.authToken && state.user) {
+    const sessionTimeout = state.user.session_timeout || 30; // ✅ Default to 30 minutes
+    if (isTokenExpired(state.authToken, sessionTimeout)) {
       console.warn("🚨 Token expired! Logging out...");
       logout();
     }
-  }, [state.authToken]);
+  }
+}, [state.authToken, state.user]);
+
 
   const setNavigate = (navigate) => {
     setNavigateFunction(() => navigate);
   };
 
   // Transform the user object to include a flat organization_id property.
-  const login = (authToken, user, navigate) => {
-    console.log("🔓 Logging in user:", user);
-    setNavigate(navigate);
+const login = (authToken, user, navigate) => {
+  console.log("🔓 Logging in user:", user);
+  setNavigate(navigate);
 
-    // Transform the user to flatten the organization ID.
-    const transformedUser = {
-      ...user,
-      organization_id: user.organization?.id, // Flatten the org id
-    };
-
-    dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user: transformedUser } });
+  // Flatten organization ID and store session timeout
+  const transformedUser = {
+    ...user,
+    organization_id: user.organization?.id,
+    session_timeout: user.session_timeout || 30, // ✅ Store user's timeout preference
   };
+
+  dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user: transformedUser } });
+};
+
 
   const logout = () => {
     console.log("🔐 Logging out...");

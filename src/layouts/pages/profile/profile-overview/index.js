@@ -21,6 +21,7 @@ import ProfileInfoCard from "examples/Cards/InfoCards/ProfileInfoCard";
 // Profile Page Components
 import Header from "layouts/pages/profile/components/Header";
 import PlatformSettings from "layouts/pages/profile/profile-overview/components/PlatformSettings";
+import SessionTimeoutSettings from "../../settings/users/sessions/sessionTimeout";
 
 function Overview() {
   console.log("🔍 Fetching User Info...");
@@ -67,6 +68,7 @@ function Overview() {
             {/* Settings Column */}
             <Grid item xs={12} md={6} xl={4}>
               <PlatformSettings />
+                <SessionTimeoutSettings />
             </Grid>
 
             {/* Profile Information Card */}

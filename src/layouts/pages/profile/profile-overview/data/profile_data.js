@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAuth } from "context/AuthContext"; // Ensure this path is correct
 
 const useUserInfo = () => {
-  const { authToken, user } = useAuth(); // Removed unnecessary `currentOrg`
+  const { authToken, user, logout } = useAuth(); // Added `logout` function
   const [userInfo, setUserInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,6 +29,12 @@ const useUserInfo = () => {
         setError(null);
       } catch (err) {
         console.error("❌ Failed to fetch user info:", err);
+
+        if (err.response && err.response.status === 401) {
+          console.warn("⚠️ Token expired, logging out...");
+          logout(); // Automatically logs out the user
+        }
+
         setError(err);
       } finally {
         console.log("🔄 Setting loading to false...");

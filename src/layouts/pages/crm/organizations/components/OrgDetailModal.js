@@ -60,51 +60,55 @@ useEffect(() => {
     setOrgData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async () => {
-    if (!orgData?.id) {
-      console.error("❌ ERROR: Selected Organization ID is missing!", orgData);
-      alert("Organization ID is missing! Please select an organization before saving.");
-      return;
-    }
+const handleSave = async () => {
+  if (!orgData?.id) {
+    console.error("❌ ERROR: Selected Organization ID is missing!", orgData);
+    alert("Organization ID is missing! Please select an organization before saving.");
+    return;
+  }
 
-    const superAdminOrgId = user?.organization_id;
-    if (!superAdminOrgId) {
-      console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
-      alert("Your organization ID is missing! Please log in again.");
-      return;
-    }
+  const headers = {
+    Authorization: `Bearer ${authToken}`,
+    "Content-Type": "application/json",
+  };
 
-    const payload = Object.fromEntries(
-      Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
+  // ✅ Only send "X-Super-Admin-Org-ID" if user is a super admin
+  if (user?.super_admin) {
+    headers["X-Super-Admin-Org-ID"] = user.organization_id;
+  }
+
+  const payload = {
+    id: orgData.id,
+    name: orgData.name,
+    domain: orgData.domain,
+    phone: orgData.phone || null,
+    website: orgData.website || null,
+  };
+
+  console.log("📡 Sending update request for Organization ID:", orgData.id);
+  console.log("📄 Request Payload:", payload);
+  console.log("📌 Headers:", headers);
+
+  setLoading(true);
+  try {
+    await axios.post(
+      `https://app.webitservices.com/api/organizations/${orgData.id}`,
+      payload,
+      { headers }
     );
 
-    console.log("📡 Sending update request for Organization ID:", orgData.id);
-    console.log("📌 Sending logged-in user's Organization ID:", superAdminOrgId);
+    console.log("✅ Organization updated successfully");
 
-    setLoading(true);
-    try {
-      await axios.post(
-        `https://app.webitservices.com/api/organizations/${orgData.id}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-            "X-Super-Admin-Org-ID": superAdminOrgId,
-          },
-        }
-      );
+    await refreshOrganizations();
+    setEditMode(false);
+    onClose();
+  } catch (error) {
+    console.error("❌ ERROR saving organization:", error.response?.data || error.message);
+  }
+  setLoading(false);
+};
 
-      console.log("✅ Organization updated successfully");
 
-      await refreshOrganizations();
-      setEditMode(false);
-      onClose();
-    } catch (error) {
-      console.error("❌ ERROR saving organization:", error.response?.data || error.message);
-    }
-    setLoading(false);
-  };
 
 return (
   <Modal open={open} onClose={onClose} aria-labelledby="organization-details-modal">
