@@ -11,7 +11,7 @@ import {
   Tabs,
   Tab,
   Card,
-  CardContent
+  CardContent,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -39,16 +39,19 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
   const { authToken, user } = useAuth();
   const [value, setValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
-  const [orgData, setOrgData] = useState(organization);
+  const [orgData, setOrgData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Always use the selected organization without overwriting with the logged-in user's ID
+  // ✅ Ensure selected organization is set when modal opens
   useEffect(() => {
     if (organization && organization.id) {
       console.log("✅ Selected organization:", organization);
       setOrgData({ ...organization });
+    } else {
+      console.warn("⚠️ No organization selected!");
+      setOrgData(null); // Prevents errors if no org is selected
     }
-  }, [organization]);
+  }, [organization, open]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -59,62 +62,55 @@ const OrganizationDetailsModal = ({ open, onClose, organization, refreshOrganiza
     setOrgData((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSave = async () => {
-  console.log("🔹 Saving organization:", orgData);
+  const handleSave = async () => {
+    if (!orgData?.id) {
+      console.error("❌ ERROR: Missing selected Organization ID");
+      alert("Organization ID is missing! Please select an organization before saving.");
+      return;
+    }
 
-  if (!orgData?.id) {
-    console.error("❌ ERROR: Missing selected Organization ID");
-    alert("Organization ID is missing! Please select an organization before saving.");
-    return;
-  }
+    // ✅ Ensure the logged-in user's organization ID is available for permission checks
+    const superAdminOrgId = user?.organization_id;
+    if (!superAdminOrgId) {
+      console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
+      alert("Your organization ID is missing! Please log in again.");
+      return;
+    }
 
-  // ✅ Ensure the logged-in user's organization ID is available for permission checks
-  const superAdminOrgId = user?.organization_id;
-  if (!superAdminOrgId) {
-    console.error("❌ ERROR: Missing logged-in user's organization ID for authorization");
-    alert("Your organization ID is missing! Please log in again.");
-    return;
-  }
-
-  // ✅ Prepare the payload with only the necessary fields (excluding nulls and IDs)
-  const payload = Object.fromEntries(
-    Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
-  );
-
-  console.log("📡 Sending update request for Organization ID:", orgData.id);
-  console.log("📌 Sending logged-in user's Organization ID:", superAdminOrgId);
-
-  setLoading(true);
-  try {
-    await axios.post(
-      `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Updates selected organization
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-          "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Used for permission check
-        },
-      }
+    const payload = Object.fromEntries(
+      Object.entries(orgData).filter(([key, value]) => value !== null && key !== "id")
     );
 
-    console.log("✅ Organization updated successfully");
+    console.log("📡 Sending update request for Organization ID:", orgData.id);
+    console.log("📌 Sending logged-in user's Organization ID:", superAdminOrgId);
 
-    // ✅ Exit edit mode
-    setEditMode(false);
+    setLoading(true);
+    try {
+      await axios.post(
+        `https://app.webitservices.com/api/organizations/${orgData.id}`, // ✅ Updates selected organization
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+            "X-Super-Admin-Org-ID": superAdminOrgId, // ✅ Used for permission check
+          },
+        }
+      );
 
-    // ✅ Refresh the organization list after saving
-    await refreshOrganizations();
+      console.log("✅ Organization updated successfully");
 
-    // ✅ Close the modal after update
-    onClose();
-  } catch (error) {
-    console.error("❌ ERROR saving organization:", error.response?.data || error.message);
-  }
-  setLoading(false);
-};
+      // ✅ Refresh the organization list after saving
+      await refreshOrganizations();
 
-
+      // ✅ Close modal and exit edit mode after update
+      setEditMode(false);
+      onClose();
+    } catch (error) {
+      console.error("❌ ERROR saving organization:", error.response?.data || error.message);
+    }
+    setLoading(false);
+  };
 
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="organization-details-modal">
@@ -145,44 +141,50 @@ const handleSave = async () => {
           </Box>
         </Box>
 
-        <Grid container spacing={3}>
-          {/* ✅ LEFT SIDE - COMPANY PROFILE */}
-          <Grid item xs={12} md={4}>
-            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
-              <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
-                Company Profile
-              </Typography>
-              {editMode ? (
-                <Box component="form">
-                  <TextField fullWidth label="Name" name="name" value={orgData?.name || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  <TextField fullWidth label="Domain" name="domain" value={orgData?.domain || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  <TextField fullWidth label="Website" name="website" value={orgData?.website || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                  <TextField fullWidth label="Description" name="description" value={orgData?.description || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
-                </Box>
-              ) : (
-                Object.entries(orgData || {}).map(([key, value]) => (
-                  <Typography key={key} variant="subtitle1">
-                    <strong>{key.replace("_", " ").toUpperCase()}:</strong> {value || "N/A"}
-                  </Typography>
-                ))
-              )}
-            </Card>
-          </Grid>
+        {orgData ? (
+          <Grid container spacing={3}>
+            {/* ✅ LEFT SIDE - COMPANY PROFILE */}
+            <Grid item xs={12} md={4}>
+              <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white", p: 2 }}>
+                <Typography variant="h6" fontWeight="bold" color="primary" mb={2}>
+                  Company Profile
+                </Typography>
+                {editMode ? (
+                  <Box component="form">
+                    <TextField fullWidth label="Name" name="name" value={orgData?.name || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                    <TextField fullWidth label="Domain" name="domain" value={orgData?.domain || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                    <TextField fullWidth label="Phone" name="phone" value={orgData?.phone || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                    <TextField fullWidth label="Website" name="website" value={orgData?.website || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                    <TextField fullWidth label="Description" name="description" value={orgData?.description || ""} onChange={handleInputChange} sx={{ mb: 2 }} />
+                  </Box>
+                ) : (
+                  Object.entries(orgData || {}).map(([key, value]) => (
+                    <Typography key={key} variant="subtitle1">
+                      <strong>{key.replace("_", " ").toUpperCase()}:</strong> {value || "N/A"}
+                    </Typography>
+                  ))
+                )}
+              </Card>
+            </Grid>
 
-          {/* ✅ RIGHT SIDE - TABS & ANALYTICS */}
-          <Grid item xs={12} md={8}>
-            <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
-              <Tabs value={value} onChange={handleChange} variant="fullWidth">
-                <Tab label="Subscriptions" />
-                <Tab label="Analytics" />
-              </Tabs>
-              <CardContent>
-                <Typography variant="body1">🔹 Additional Organization Details</Typography>
-              </CardContent>
-            </Card>
+            {/* ✅ RIGHT SIDE - TABS & ANALYTICS */}
+            <Grid item xs={12} md={8}>
+              <Card sx={{ boxShadow: 3, borderRadius: 2, bgcolor: "white" }}>
+                <Tabs value={value} onChange={handleChange} variant="fullWidth">
+                  <Tab label="Subscriptions" />
+                  <Tab label="Analytics" />
+                </Tabs>
+                <CardContent>
+                  <Typography variant="body1">🔹 Additional Organization Details</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-        </Grid>
+        ) : (
+          <Typography variant="h6" color="error" align="center">
+            ❌ No Organization Selected
+          </Typography>
+        )}
       </Box>
     </Modal>
   );
