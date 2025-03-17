@@ -20,6 +20,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MDButton from "../../../../../components/MDButton";
 import { useAuth } from "../../../../../context/AuthContext";
+import ContactsList from "../../contacts/components/ContactsList"; // ✅ Use the new ContactsList component
 
 // 🎨 Modal Styling
 const style = {
@@ -239,60 +240,58 @@ const ClientDetailsModal = ({ open, onClose, client, refreshClients }) => {
                   />
 
                   {/* 🔹 Industry Dropdown */}
-<TextField
-  fullWidth
-  select
-  label="Industry"
-  name="industry"
-  value={clientData?.industry || ""}
-  onChange={handleInputChange}
-  sx={{ mb: 2 }}
-  InputLabelProps={{ shrink: true }}
-  SelectProps={{
-    sx: {
-      height: "40px", // Adjust as needed
-      "& .MuiSelect-select": {
-        paddingTop: "16px",
-        paddingBottom: "16px",
-      },
-    },
-  }}
->
-  {industries.map((industry) => (
-    <MenuItem key={industry.id} value={industry.name}>
-      {industry.name}
-    </MenuItem>
-  ))}
-</TextField>
-
+                  <TextField
+                    fullWidth
+                    select
+                    label="Industry"
+                    name="industry"
+                    value={clientData?.industry || ""}
+                    onChange={handleInputChange}
+                    sx={{ mb: 2 }}
+                    InputLabelProps={{ shrink: true }}
+                    SelectProps={{
+                      sx: {
+                        height: "40px", // Adjust as needed
+                        "& .MuiSelect-select": {
+                          paddingTop: "16px",
+                          paddingBottom: "16px",
+                        },
+                      },
+                    }}
+                  >
+                    {industries.map((industry) => (
+                      <MenuItem key={industry.id} value={industry.name}>
+                        {industry.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
                   {/* 🔹 Size Dropdown */}
-<TextField
-  fullWidth
-  select
-  label="Size"
-  name="size"
-  value={clientData?.size || ""}
-  onChange={handleInputChange}
-  sx={{ mb: 2 }}
-  InputLabelProps={{ shrink: true }}
-  SelectProps={{
-    sx: {
-      height: "40px", // Adjust as needed
-      "& .MuiSelect-select": {
-        paddingTop: "16px",
-        paddingBottom: "16px",
-      },
-    },
-  }}
->
-  {sizes.map((size) => (
-    <MenuItem key={size.id} value={size.name}>
-      {size.name}
-    </MenuItem>
-  ))}
-</TextField>
-
+                  <TextField
+                    fullWidth
+                    select
+                    label="Size"
+                    name="size"
+                    value={clientData?.size || ""}
+                    onChange={handleInputChange}
+                    sx={{ mb: 2 }}
+                    InputLabelProps={{ shrink: true }}
+                    SelectProps={{
+                      sx: {
+                        height: "40px", // Adjust as needed
+                        "& .MuiSelect-select": {
+                          paddingTop: "16px",
+                          paddingBottom: "16px",
+                        },
+                      },
+                    }}
+                  >
+                    {sizes.map((size) => (
+                      <MenuItem key={size.id} value={size.name}>
+                        {size.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Box>
               ) : (
                 <Box>
@@ -333,6 +332,9 @@ const ClientDetailsModal = ({ open, onClose, client, refreshClients }) => {
                 </TabPanel>
                 <TabPanel value={value} index={1}>
                   <Typography variant="body1">🔹 List of Tickets Here</Typography>
+                </TabPanel>
+                <TabPanel value={value} index={2}>
+                  <ContactsList clientId={client?.id} /> {/* ✅ Show contacts list */}
                 </TabPanel>
                 {/* Add more TabPanels as needed */}
               </CardContent>
