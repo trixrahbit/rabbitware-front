@@ -8,7 +8,11 @@ import MDInput from "components/MDInput";
 import { useAuth } from "../../../../../../context/AuthContext";
 
 const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
-  const { authToken, organization } = useAuth();
+  const { authToken, user } = useAuth();
+
+  // ✅ Ensure we get the correct organization ID from the user object
+  const organizationId = user?.organization_id;
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -30,32 +34,26 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
     statuses: [],
   });
 
-  // ✅ Debug Step 1: Check if useEffect runs
+  // ✅ Fetch dropdown data when modal opens
   useEffect(() => {
-    console.log("🔥 useEffect triggered! open:", open, "organization:", organization);
+    console.log("🔥 useEffect triggered! open:", open, "organizationId:", organizationId);
 
     if (!open) {
       console.log("❌ Modal is closed. Exiting...");
       return;
     }
 
-    if (!organization?.id) {
-      console.error("❌ Organization ID is missing!");
-      return;
-    }
-
-    if (!authToken) {
-      console.error("❌ Auth Token is missing!");
+    if (!authToken || !organizationId) {
+      console.error("❌ Missing authToken or organizationId!");
       return;
     }
 
     const fetchDropdowns = async () => {
       try {
-        const orgId = organization.id;
-        console.log(`🔍 Fetching data for orgId: ${orgId}`);
+        console.log(`🔍 Fetching data for organizationId: ${organizationId}`);
 
         const [clientsRes, prioritiesRes, impactsRes, statusesRes] = await Promise.all([
-          axios.get(`https://app.webitservices.com/api/organizations/${orgId}/clients`, {
+          axios.get(`https://app.webitservices.com/api/organizations/${organizationId}/clients`, {
             headers: { Authorization: `Bearer ${authToken}` },
           }),
           axios.get("https://app.webitservices.com/api/priorities", {
@@ -86,17 +84,29 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
     };
 
     fetchDropdowns();
-  }, [open, organization?.id, authToken]);
+  }, [open, organizationId, authToken]);
 
+  // ✅ Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ✅ Handle ticket creation
   const handleCreateTicket = async () => {
+    if (!authToken || !organizationId) {
+      console.error("❌ Cannot create ticket, missing authToken or organizationId");
+      return;
+    }
+
     try {
-      await axios.post("https://app.webitservices.com/api/tickets", formData, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
+      await axios.post("https://app.webitservices.com/api/tickets",
+        { ...formData, organization_id: organizationId }, // ✅ Ensure organization_id is included
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
+
+      console.log("✅ Ticket Created Successfully!");
       onTicketCreated();
       onClose();
     } catch (error) {
@@ -211,4 +221,3 @@ const NewTicketModal = ({ open, onClose, onTicketCreated }) => {
 };
 
 export default NewTicketModal;
-
