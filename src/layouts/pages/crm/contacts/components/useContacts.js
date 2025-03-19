@@ -17,13 +17,25 @@ const useContacts = (clientId) => {
 
     const fetchContacts = async () => {
       setIsLoading(true);
+      console.log("📡 Fetching contacts...");
+
       try {
         const response = await axios.get(
           `https://app.webitservices.com/api/organizations/${orgId}/clients/${clientId}/contacts`,
           { headers: { Authorization: `Bearer ${authToken}` } }
         );
 
-        if (isMounted) setContacts(response.data || []);
+        if (isMounted) {
+          console.log("✅ Contacts fetched:", response.data);
+
+          // 🔥 Debug: Check if state is constantly being updated
+          if (JSON.stringify(response.data) !== JSON.stringify(contacts)) {
+            console.log("🔄 Updating contacts state...");
+            setContacts(response.data || []);
+          } else {
+            console.log("⚠️ No change in contacts data, skipping state update.");
+          }
+        }
       } catch (err) {
         console.error("❌ Error fetching contacts:", err);
         if (isMounted) setError(err);
@@ -35,9 +47,9 @@ const useContacts = (clientId) => {
     fetchContacts();
 
     return () => {
-      isMounted = false; // ✅ Cleanup to prevent unwanted updates
+      isMounted = false;
     };
-  }, [authToken, orgId, clientId]); // ✅ Dependencies
+  }, [authToken, orgId, clientId]); // ✅ Ensure dependencies are correct
 
   return { contacts, isLoading, error, setContacts };
 };

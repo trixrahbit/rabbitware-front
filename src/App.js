@@ -81,7 +81,7 @@ export default function App() {
       <CssBaseline />
       {controller.layout === "dashboard" && (
         <>
-          <Sidenav color={controller.sidenavColor} brandName="RabbitAI" routes={routes} />
+          <Sidenav color={controller.sidenavColor} brandName="Rabbit AI" routes={routes} />
           <Configurator />
         </>
       )}

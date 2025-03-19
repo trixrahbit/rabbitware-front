@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { Modal, MenuItem, Grid } from "@mui/material";
@@ -30,8 +30,11 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
     sizes: [],
   });
 
+  const fetchedDropdowns = useRef(false); // ✅ Prevent refetching dropdown data
+
   useEffect(() => {
-    if (!open) return;
+    if (!open || fetchedDropdowns.current) return; // ✅ Only fetch once
+
     const fetchDropdowns = async () => {
       try {
         const responses = await Promise.all([
@@ -45,13 +48,15 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
           industries: responses[1].data,
           sizes: responses[2].data,
         });
+
+        fetchedDropdowns.current = true; // ✅ Mark as fetched
       } catch (error) {
         console.error("Error fetching dropdown data:", error);
       }
     };
 
     fetchDropdowns();
-  }, [open]);
+  }, [open]); // ✅ Only runs on first modal open
 
   const handleChange = (e) => {
     setOrgData({ ...orgData, [e.target.name]: e.target.value });
@@ -143,7 +148,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               select
               label="Type"
               name="type"
-              value={orgData.type}
+              value={orgData.type || ""} // ✅ Ensure valid value
               onChange={handleChange}
               sx={{
                 fontSize: "16px",
@@ -152,6 +157,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               }}
               InputLabelProps={{ shrink: true }}
             >
+              <MenuItem value="">Select Type</MenuItem> {/* ✅ Default empty value */}
               {dropdownData.types.map((t) => (
                 <MenuItem key={t.id} value={t.id}>
                   {t.name}
@@ -166,7 +172,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               select
               label="Industry"
               name="industry"
-              value={orgData.industry}
+              value={orgData.industry || ""} // ✅ Ensure valid value
               onChange={handleChange}
               sx={{
                 fontSize: "16px",
@@ -175,6 +181,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               }}
               InputLabelProps={{ shrink: true }}
             >
+              <MenuItem value="">Select Industry</MenuItem> {/* ✅ Default empty value */}
               {dropdownData.industries.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
                   {i.name}
@@ -189,7 +196,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               select
               label="Size"
               name="size"
-              value={orgData.size}
+              value={orgData.size || ""} // ✅ Ensure valid value
               onChange={handleChange}
               sx={{
                 fontSize: "16px",
@@ -198,6 +205,7 @@ const AddOrgModal = ({ open, onClose, onSave }) => {
               }}
               InputLabelProps={{ shrink: true }}
             >
+              <MenuItem value="">Select Size</MenuItem> {/* ✅ Default empty value */}
               {dropdownData.sizes.map((s) => (
                 <MenuItem key={s.id} value={s.id}>
                   {s.name}

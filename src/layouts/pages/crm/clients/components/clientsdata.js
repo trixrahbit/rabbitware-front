@@ -1,18 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
-import { Grid, TextField, InputAdornment, Tooltip } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { TextField, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import DataTable from "../../../../../examples/Tables/DataTable";
-
-import { useAuth } from "../../../../../context/AuthContext";
+import axios from "axios";
 import { useClients } from "../../../../../context/ClientsContext";
+import { useAuth } from "context/AuthContext";
 
-import MDBox from "../../../../../components/MDBox";
-import MDTypography from "../../../../../components/MDTypography";
-import MDButton from "../../../../../components/MDButton";
-
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
 import AddClientModal from "./AddClientModal";
 import ClientDetailsModal from "./ClientDetailModal";
 
@@ -24,7 +19,7 @@ const clientColumns = [
 
 function ClientsData() {
   const { clients, setClients } = useClients();
-  const { authToken, organization } = useAuth();
+  const { authToken, user } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -32,43 +27,49 @@ function ClientsData() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // ─────────────────────────────────────────────────────────
-  // Fetch Clients
-  // ─────────────────────────────────────────────────────────
-  const fetchClients = async () => {
-    if (!organization?.id) return; // Skip if no org ID
+  // ✅ Fetch clients from API
+  const fetchClients = useCallback(async () => {
+    if (!authToken || !user?.organization?.id) return;
+
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://app.webitservices.com/api/organizations/${organization.id}/clients`,
+        `https://app.webitservices.com/api/organizations/${user.organization.id}/clients`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
-      setClients(response.data);
+
+      // ✅ Prevent unnecessary state updates
+      setClients((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(response.data)) {
+          console.log("✅ Updating clients state.");
+          return response.data;
+        }
+        console.log("⚠️ No changes detected, skipping update.");
+        return prev;
+      });
     } catch (error) {
-      console.error("❌ Error fetching clients:", error);
+      console.error("❌ Error fetching clients:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [authToken, user?.organization?.id, setClients]);
 
   useEffect(() => {
     fetchClients();
-  }, [authToken, organization]);
+  }, [fetchClients]); // ✅ Only runs when dependencies change
 
-  // ─────────────────────────────────────────────────────────
-  // Modals Handlers
-  // ─────────────────────────────────────────────────────────
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  const handleOpenDetailsModal = (client) => {
+  // ✅ Handle opening the details modal
+  const handleOpenDetailsModal = useCallback((client) => {
+    if (!client || !client.id) {
+      console.error("❌ ERROR: Selected client is missing an ID:", client);
+      return;
+    }
+    console.log("🔹 Opening details for:", client);
     setSelectedClient(client);
     setDetailsModalOpen(true);
-  };
-  const handleCloseDetailsModal = () => {
-    setDetailsModalOpen(false);
-    setSelectedClient(null);
-  };
+  }, []);
 
+  // ✅ Prevent duplicate client additions
   const handleSaveClient = async (clientData) => {
     if (!clientData.organization_id) {
       console.error("❌ Organization ID is missing!");
@@ -80,38 +81,30 @@ function ClientsData() {
         clientData,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
-      fetchClients();
-      handleCloseModal();
+
+      setClients((prevClients) => {
+        if (prevClients.some((c) => c.id === clientData.id)) {
+          return prevClients; // Prevent duplicate client entry
+        }
+        return [...prevClients, clientData];
+      });
+
+      setIsModalOpen(false);
     } catch (error) {
       console.error("❌ Error adding client:", error.response?.data || error.message);
     }
   };
 
-  // ─────────────────────────────────────────────────────────
-  // Filtering
-  // ─────────────────────────────────────────────────────────
-  const filteredClients = useMemo(
-    () =>
-      clients.filter((client) =>
-        client.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
-    [clients, searchQuery]
-  );
+  // ✅ Memoized client filtering to prevent unnecessary recalculations
+  const filteredClients = useMemo(() => {
+    return clients.filter((client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [clients, searchQuery]);
 
-  // ─────────────────────────────────────────────────────────
-  // Render
-  // ─────────────────────────────────────────────────────────
-  return (
-    <MDBox p={3}>
-
-
-
-
-      {/* Clients Data Table */}
-<DataTable
-  table={{
-    columns: clientColumns,
-    rows: filteredClients.map((client) => ({
+  // ✅ Memoized table rows to improve performance
+  const tableRows = useMemo(() => {
+    return filteredClients.map((client) => ({
       ...client,
       name: (
         <MDTypography
@@ -123,62 +116,40 @@ function ClientsData() {
           {client.name}
         </MDTypography>
       ),
-    })),
-  }}
-  isLoading={loading}
-  entriesPerPage={{ defaultValue: 10, options: [10, 25, 50, 100] }}
-  showTotalEntries
-  customHeader={(
-    <MDBox display="flex" justifyContent="space-between" alignItems="center" width="100%">
-      {/* ✅ Center: Search & Filter */}
-      <MDBox display="flex" alignItems="center" gap={2} justifyContent="center" flexGrow={1}>
-        <TextField
-          placeholder="Search Clients"
-          variant="outlined"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            backgroundColor: "background.paper",
-            borderRadius: "8px",
-            "&:hover": { backgroundColor: "background.default" },
-            maxWidth: "250px", // ✅ Proper width
-          }}
-        />
-        <MDButton variant="outlined" color="secondary" startIcon={<FilterListIcon />}>
-          Filter
-        </MDButton>
-      </MDBox>
+    }));
+  }, [filteredClients, handleOpenDetailsModal]);
 
+  return (
+    <MDBox p={3}>
+      <TextField
+        fullWidth
+        placeholder="Search Clients..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ mb: 2 }}
+      />
 
+      <DataTable
+        table={{
+          columns: clientColumns,
+          rows: tableRows,
+        }}
+        isLoading={loading}
+        entriesPerPage={{ defaultValue: 10, options: [10, 25, 50, 100] }}
+        showTotalEntries
+      />
 
-    </MDBox>
-  )}
-/>
-
-
-
-
-      {/* Modals */}
-      {isModalOpen && (
-        <AddClientModal
-          open={isModalOpen}
-          onClose={handleCloseModal}
-          onSave={handleSaveClient}
-        />
-      )}
+      {/* ✅ Modals */}
+      {isModalOpen && <AddClientModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveClient} />}
       {detailsModalOpen && selectedClient && (
-        <ClientDetailsModal
-          open={detailsModalOpen}
-          onClose={handleCloseDetailsModal}
-          client={selectedClient}
-        />
+        <ClientDetailsModal open={detailsModalOpen} onClose={() => setDetailsModalOpen(false)} client={selectedClient} />
       )}
     </MDBox>
   );

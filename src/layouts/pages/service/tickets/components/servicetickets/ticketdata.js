@@ -42,13 +42,17 @@ const ticketColumns = [
   { Header: "Description", accessor: "description", width: "20%" },
 ];
 
-const TicketData = ({ onTicketClick }) => {
+const TicketData = ({ onTicketClick, selectedQueue }) => {
   const [tickets, setTickets] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState([]);
 
   useEffect(() => {
+    let url = "https://app.webitservices.com/api/tickets";
+    if (selectedQueue) {
+      url += `?queue_id=${selectedQueue}`;
+    }
     axios
-      .get("https://app.webitservices.com/api/tickets")
+      .get(url)
       .then((response) => {
         const formattedTickets = response.data.map((ticket) => ({
           ...ticket,
@@ -59,7 +63,7 @@ const TicketData = ({ onTicketClick }) => {
         setTickets(formattedTickets);
       })
       .catch((error) => console.error("Error fetching tickets:", error));
-  }, [onTicketClick]);
+  }, [onTicketClick, selectedQueue]);
 
   const toggleSelection = (ticketId) => {
     setTickets((prevTickets) =>
@@ -77,7 +81,6 @@ const TicketData = ({ onTicketClick }) => {
 
   return (
     <Box>
-      {/* Actions Bar */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         {selectedTickets.length > 0 && (
           <Box>
@@ -94,8 +97,6 @@ const TicketData = ({ onTicketClick }) => {
           </Box>
         )}
       </Box>
-
-      {/* Tickets Table */}
       <DataTable
         table={{
           columns: ticketColumns,

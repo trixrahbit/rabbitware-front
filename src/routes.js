@@ -5,6 +5,7 @@ import projectRoutes from "routing/projectRoutes";
 import operationsRoutes from "routing/operationsRoutes";
 import calendarRoutes from "routing/calendarRoutes";
 import settingsRoutes from "routing/settingsRoutes";
+import financeRoutes from "./routing/financeRoutes";
 
 const useFilteredRoutes = () => {
   const { user } = useAuth();
@@ -21,7 +22,9 @@ const useFilteredRoutes = () => {
     ...projectRoutes,
     ...operationsRoutes,
     ...calendarRoutes,
+    ...financeRoutes,
     ...settingsRoutes,
+
   ];
 };
 

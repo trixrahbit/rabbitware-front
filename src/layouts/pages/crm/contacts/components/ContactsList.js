@@ -8,118 +8,104 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
-  Box,
+  CircularProgress,
 } from "@mui/material";
-import MDButton from "components/MDButton";
-import AddIcon from "@mui/icons-material/Add";
-import NewContactModal from "./NewContactModal";
 import { useAuth } from "context/AuthContext";
+import MDTypography from "components/MDTypography";
 
 const ContactsList = ({ clientId }) => {
   const { authToken, user } = useAuth();
   const orgId = user?.organization_id;
-
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newContactModalOpen, setNewContactModalOpen] = useState(false);
-
-  // ✅ Fetch contacts from API
-  const fetchContacts = async () => {
-    if (!clientId || !orgId || !authToken) {
-      console.error("❌ Missing orgId or clientId");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      console.log(`📡 Fetching contacts for orgId: ${orgId}, clientId: ${clientId}`);
-
-      const response = await axios.get(
-        `https://app.webitservices.com/api/organizations/${orgId}/clients/${clientId}/contacts`,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-
-      setContacts(response.data || []);
-    } catch (error) {
-      console.error("❌ Error fetching contacts:", error.response?.data || error.message);
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchContacts = async () => {
+      if (!clientId || !orgId || !authToken) return;
+
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://app.webitservices.com/api/organizations/${orgId}/clients/${clientId}/contacts`,
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+
+        if (isMounted && JSON.stringify(response.data) !== JSON.stringify(contacts)) {
+          setContacts(response.data || []);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching contacts:", error.response?.data || error.message);
+      }
+      if (isMounted) setLoading(false);
+    };
+
     fetchContacts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [clientId, orgId, authToken]);
 
   return (
-    <Box sx={{ width: "100%", maxWidth: "100%", padding: 2 }}>
-      <MDButton
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={() => setNewContactModalOpen(true)}
-        sx={{ mb: 2 }}
-      >
-        Add Contact
-      </MDButton>
+    <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 3, overflow: "hidden" }}>
+      <Table sx={{ width: "100%", tableLayout: "fixed" }}>
+        {/* ✅ Table Header: Ensure it spans full width */}
+        <TableHead sx={{ backgroundColor: "#3BB273", display: "table-header-group", width: "100%" }}>
+          <TableRow sx={{ width: "100%" }}>
+            <TableCell sx={{ fontWeight: "bold", color: "white", textAlign: "center", width: "25%" }}>
+              Name
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "white", textAlign: "center", width: "30%" }}>
+              Email
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "white", textAlign: "center", width: "20%" }}>
+              Phone
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "white", textAlign: "center", width: "25%" }}>
+              Role
+            </TableCell>
+          </TableRow>
+        </TableHead>
 
-      {/* ✅ FIX BLURRY TABLE + ALIGNMENT ISSUES */}
-      <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2, overflowX: "auto" }}>
-        <Table sx={{ minWidth: 700, borderCollapse: "collapse" }}>
-          {/* ✅ PROPER HEADER STYLING */}
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-              <TableCell sx={{ fontWeight: "bold", textAlign: "left", width: "25%" }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold", textAlign: "left", width: "30%" }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: "bold", textAlign: "left", width: "20%" }}>Phone</TableCell>
-              <TableCell sx={{ fontWeight: "bold", textAlign: "left", width: "25%" }}>Role</TableCell>
+        {/* ✅ Table Body */}
+        <TableBody>
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                <CircularProgress color="success" />
+              </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography variant="body1">Loading...</Typography>
+          ) : contacts.length > 0 ? (
+            contacts.map((contact) => (
+              <TableRow key={contact.id} hover>
+                <TableCell sx={{ textAlign: "center", fontSize: "14px", color: "#2E7D32" }}>
+                  {contact.first_name} {contact.last_name}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center", fontSize: "14px", color: "#1E88E5" }}>
+                  {contact.email}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center", fontSize: "14px", color: "#616161" }}>
+                  {contact.phone || "N/A"}
+                </TableCell>
+                <TableCell sx={{ textAlign: "center", fontSize: "14px", color: "#FF9800" }}>
+                  {contact.role || "N/A"}
                 </TableCell>
               </TableRow>
-            ) : contacts.length > 0 ? (
-              contacts.map((contact, index) => (
-                <TableRow
-                  key={contact.id || index}
-                  sx={{
-                    "&:nth-of-type(even)": { backgroundColor: "#fafafa" },
-                    "&:hover": { backgroundColor: "#f0f0f0" },
-                    borderBottom: "1px solid #ddd",
-                  }}
-                >
-                  <TableCell>{`${contact.first_name} ${contact.last_name}`}</TableCell>
-                  <TableCell>{contact.email}</TableCell>
-                  <TableCell>{contact.phone || "N/A"}</TableCell>
-                  <TableCell>{contact.role || "N/A"}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography variant="body1">No contacts found.</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* ✅ Ensure table updates when a new contact is added */}
-      <NewContactModal
-        open={newContactModalOpen}
-        onClose={() => {
-          setNewContactModalOpen(false);
-          fetchContacts(); // Refresh table on close
-        }}
-        clientId={clientId}
-        orgId={orgId}
-      />
-    </Box>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                <MDTypography variant="h6" color="textSecondary">
+                  No contacts found.
+                </MDTypography>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

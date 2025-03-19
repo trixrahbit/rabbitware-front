@@ -1,34 +1,32 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+
 const AuthContext = createContext();
 
 const initialAuthState = {
   authToken: sessionStorage.getItem("authToken") || null,
-  // Use an empty object if nothing is in session storage.
   user: JSON.parse(sessionStorage.getItem("user") || "{}"),
   isAuthenticated: !!sessionStorage.getItem("authToken"),
+  lastActivity: Date.now(),
 };
 
 const authActionTypes = {
   SET_AUTH: "SET_AUTH",
   LOGOUT: "LOGOUT",
+  UPDATE_ACTIVITY: "UPDATE_ACTIVITY",
 };
 
-const isTokenExpired = (token, sessionTimeout) => {
+const isTokenExpired = (token) => {
   try {
     const decoded = jwtDecode(token);
     if (!decoded.exp) return false;
 
-    const expirationTime = decoded.exp * 1000; // Convert to milliseconds
-    const sessionLimit = sessionTimeout ? sessionTimeout * 60 * 1000 : 30 * 60 * 1000; // Default: 30 minutes
-
-    return expirationTime < Date.now() - sessionLimit; // ✅ Compare against user's session timeout
+    return decoded.exp * 1000 < Date.now(); // Convert to milliseconds and check
   } catch (error) {
     console.error("❌ Failed to decode token:", error);
     return true;
   }
 };
-
 
 const authReducer = (state, action) => {
   switch (action.type) {
@@ -38,70 +36,87 @@ const authReducer = (state, action) => {
       return {
         ...state,
         authToken: action.payload.authToken,
-        user: action.payload.user || {}, // ✅ Ensure user is never null
+        user: action.payload.user || {},
         isAuthenticated: true,
+        lastActivity: Date.now(),
       };
     case authActionTypes.LOGOUT:
-      sessionStorage.removeItem("authToken");
-      sessionStorage.removeItem("user");
-      return { authToken: null, user: {}, isAuthenticated: false }; // ✅ Set user to {}
+      sessionStorage.clear();
+      return { authToken: null, user: {}, isAuthenticated: false, lastActivity: Date.now() };
+    case authActionTypes.UPDATE_ACTIVITY:
+      return { ...state, lastActivity: Date.now() };
     default:
       return state;
   }
 };
 
-
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
   const [navigateFunction, setNavigateFunction] = useState(null);
 
-useEffect(() => {
-  console.log("🔍 Checking token expiration...");
+  useEffect(() => {
+    if (!state.authToken) return;
 
-  if (state.authToken && state.user) {
-    const sessionTimeout = state.user.session_timeout || 30; // ✅ Default to 30 minutes
-    if (isTokenExpired(state.authToken, sessionTimeout)) {
-      console.warn("🚨 Token expired! Logging out...");
+    const sessionTimeout = (state.user.session_timeout || 120) * 60 * 1000; // Default: 2 hours
+    const now = Date.now();
+    const lastActivityElapsed = now - state.lastActivity;
+
+    if (isTokenExpired(state.authToken) || lastActivityElapsed > sessionTimeout) {
+      console.warn("🚨 Token expired or session timed out! Logging out...");
       logout();
     }
-  }
-}, [state.authToken, state.user]);
 
+    // ✅ Only trigger this check at set intervals instead of on every render
+    const interval = setInterval(() => {
+      if (isTokenExpired(state.authToken) || Date.now() - state.lastActivity > sessionTimeout) {
+        console.warn("🚨 Auto logout due to inactivity.");
+        logout();
+      }
+    }, 60000); // Check every 1 minute
 
-  const setNavigate = (navigate) => {
-    setNavigateFunction(() => navigate);
+    return () => clearInterval(interval);
+  }, [state.authToken, state.lastActivity]); // ✅ Only run when token or activity timestamp changes
+
+  // ✅ Track user activity and update state without unnecessary renders
+  useEffect(() => {
+    const resetActivity = () => dispatch({ type: authActionTypes.UPDATE_ACTIVITY });
+
+    window.addEventListener("mousemove", resetActivity);
+    window.addEventListener("keydown", resetActivity);
+    window.addEventListener("click", resetActivity);
+    window.addEventListener("scroll", resetActivity);
+
+    return () => {
+      window.removeEventListener("mousemove", resetActivity);
+      window.removeEventListener("keydown", resetActivity);
+      window.removeEventListener("click", resetActivity);
+      window.removeEventListener("scroll", resetActivity);
+    };
+  }, []);
+
+  const setNavigate = (navigate) => setNavigateFunction(() => navigate);
+
+  const login = (authToken, user, navigate) => {
+    console.log("🔓 Logging in user:", user);
+    setNavigate(navigate);
+
+    const transformedUser = {
+      ...user,
+      organization_id: user.organization?.id,
+      session_timeout: user.session_timeout || 120, // Default 2 hours
+    };
+
+    dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user: transformedUser } });
   };
-
-  // Transform the user object to include a flat organization_id property.
-const login = (authToken, user, navigate) => {
-  console.log("🔓 Logging in user:", user);
-  setNavigate(navigate);
-
-  // Flatten organization ID and store session timeout
-  const transformedUser = {
-    ...user,
-    organization_id: user.organization?.id,
-    session_timeout: user.session_timeout || 30, // ✅ Store user's timeout preference
-  };
-
-  dispatch({ type: authActionTypes.SET_AUTH, payload: { authToken, user: transformedUser } });
-};
-
 
   const logout = () => {
     console.log("🔐 Logging out...");
     sessionStorage.clear();
     dispatch({ type: authActionTypes.LOGOUT });
-    if (navigateFunction) {
-      navigateFunction("/login", { replace: true });
-    }
+    if (navigateFunction) navigateFunction("/login", { replace: true });
   };
 
-  return (
-    <AuthContext.Provider value={{ ...state, login, logout, setNavigate }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ ...state, login, logout, setNavigate }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

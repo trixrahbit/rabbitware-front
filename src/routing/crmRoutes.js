@@ -1,5 +1,6 @@
 import ClientsData from "layouts/pages/crm/clients";
 import OrganizationsData from "layouts/pages/crm/organizations";
+import ContactsData from "layouts/pages/crm/contacts"; // ✅ Import Contacts Page
 import Icon from "@mui/material/Icon";
 
 const crmRoutes = [
@@ -14,7 +15,7 @@ const crmRoutes = [
     key: "clients",
     icon: <Icon fontSize="medium">people</Icon>,
     collapse: [
-        {
+      {
         name: "Organizations",
         key: "organizations",
         route: "/pages/crm/organizations",
@@ -29,7 +30,13 @@ const crmRoutes = [
         component: <ClientsData />,
         protected: true,
       },
-
+      {
+        name: "Contacts",
+        key: "contacts",
+        route: "/pages/crm/clients/:clientId/contacts", // ✅ Dynamic Route
+        component: <ContactsData />,
+        protected: true,
+      },
     ],
   },
 ];

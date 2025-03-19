@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { TextField, InputAdornment, Tooltip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -27,41 +27,45 @@ const OrganizationsData = () => {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
-  // ✅ Fetch organizations from API
-  const fetchOrganizations = async () => {
+  // ✅ Fetch organizations from API - Prevent infinite loops
+  const fetchOrganizations = useCallback(async () => {
     if (!authToken) return;
+
     setLoading(true);
     try {
       const response = await axios.get("https://app.webitservices.com/api/organizations", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
-      console.log("✅ API Response:", response.data); // 🚀 Debugging
-
-      if (!Array.isArray(response.data)) {
-        throw new Error("API did not return an array.");
-      }
-
-      // ✅ Ensure each organization has a valid ID
-      const sanitizedOrgs = response.data.filter((org) => org?.id);
-      console.log("📊 Sanitized Organizations:", sanitizedOrgs);
-      setOrganizations(sanitizedOrgs);
+      // ✅ Only update state if data actually changed
+      setOrganizations((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(response.data)) {
+          console.log("✅ Updating organizations state.");
+          return response.data;
+        }
+        console.log("⚠️ No changes detected, skipping update.");
+        return prev;
+      });
     } catch (error) {
       console.error("❌ Error fetching organizations:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchOrganizations();
   }, [authToken]);
 
   useEffect(() => {
-    console.log("📊 Updated organizations state:", organizations); // Debug state changes
+    fetchOrganizations();
+  }, [fetchOrganizations]); // ✅ Runs only when `authToken` changes
+
+  // ✅ Debug: Log organization state changes
+  useEffect(() => {
+    if (organizations.length > 0) {
+      console.log("📊 Updated organizations state:", organizations);
+    }
   }, [organizations]);
 
   // ✅ Handle opening the details modal
-  const handleOpenDetails = (org) => {
+  const handleOpenDetails = useCallback((org) => {
     if (!org || !org.id) {
       console.error("❌ ERROR: Selected organization is missing an ID:", org);
       return;
@@ -69,43 +73,49 @@ const OrganizationsData = () => {
     console.log("🔹 Opening details for:", org);
     setSelectedOrg(org);
     setDetailsModalOpen(true);
-  };
+  }, []);
 
-  // ✅ Filter organizations based on search
+  // ✅ Filter organizations based on search query
   const filteredOrganizations = useMemo(() => {
-    if (!Array.isArray(organizations)) return [];
-    return organizations.filter(
-      (org) => org?.name && org.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return organizations.filter((org) =>
+      org?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [organizations, searchQuery]);
 
   // ✅ Ensure DataTable gets valid data
-  const tableRows = filteredOrganizations
-    .map((org) => {
-      if (!org.id) {
-        console.warn("⚠️ Organization missing ID:", org); // Debugging
-        return null; // Skip invalid entries
-      }
-      return {
-        ...org,
-        name: (
-          <MDTypography
-            variant="button"
-            color="primary"
-            sx={{ cursor: "pointer", textDecoration: "none" }}
-            onClick={() => handleOpenDetails(org)}
-          >
-            {org.name}
-          </MDTypography>
-        ),
-      };
-    })
-    .filter(Boolean); // Remove null values
-
-  console.log("📊 Final Table Rows:", tableRows); // Debug DataTable content
+  const tableRows = useMemo(() => {
+    return filteredOrganizations.map((org) => ({
+      ...org,
+      name: (
+        <MDTypography
+          variant="button"
+          color="primary"
+          sx={{ cursor: "pointer", textDecoration: "none" }}
+          onClick={() => handleOpenDetails(org)}
+        >
+          {org.name}
+        </MDTypography>
+      ),
+    }));
+  }, [filteredOrganizations, handleOpenDetails]);
 
   return (
     <MDBox p={3}>
+      <TextField
+        fullWidth
+        placeholder="Search Organizations..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ mb: 2 }}
+      />
+
       <DataTable
         table={{
           columns: orgColumns,
@@ -126,7 +136,6 @@ const OrganizationsData = () => {
             setSelectedOrg(null);
           }}
           organization={selectedOrg} // ✅ Correctly passing the selected organization
-          refreshOrganizations={fetchOrganizations}
         />
       )}
     </MDBox>
