@@ -31,7 +31,7 @@ import PageLayout from "examples/LayoutContainers/PageLayout";
 import pageRoutes from "page.routes";
 
 // Material Dashboard 2 PRO React context
-import { useMaterialUIController } from "context";
+import { useMaterialUIController } from "../../../../contexts/MaterialUIContext";
 
 function IllustrationLayout({ header, title, description, illustration, children }) {
   const [controller] = useMaterialUIController();

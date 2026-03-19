@@ -1,28 +1,12 @@
-/**
-=========================================================
-* Material Dashboard 2 PRO React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-pro-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { forwardRef } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
 
 // Custom styles for MDTypography
-import MDTypographyRoot from "components/MDTypography/MDTypographyRoot";
+import MDTypographyRoot from "../MDTypography/MDTypographyRoot";
 
-// Material Dashboard 2 PRO React contexts
-import { useMaterialUIController } from "context";
+import { useMaterialUIController } from "../../contexts/MaterialUIContext";
 
 const MDTypography = forwardRef(
   (

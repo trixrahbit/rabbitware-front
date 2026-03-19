@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Divider, CircularProgress } from "@mui/material"; // ✅ Add loader
 import { Link } from "react-router-dom";
 
@@ -33,6 +33,16 @@ function Basic() {
   const [error, setError] = useState(""); // ✅ Track error messages
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for session expiration message in location state
+  useEffect(() => {
+    if (location.state?.message) {
+      setError(location.state.message);
+      // Clear the message from location state to prevent it from showing again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
@@ -42,20 +52,21 @@ const handleSubmit = async (e) => {
   setError(""); // ✅ Reset errors before new request
 
   try {
-    const response = await fetch("https://app.webitservices.com/api/login", {
+    // Use relative path instead of hardcoded URL for better compatibility
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded", // ✅ Correct Content-Type
+        "Content-Type": "application/json",
       },
-      body: new URLSearchParams({
-        username: email,
+      body: JSON.stringify({
+        email: email,
         password: password,
       }),
+      credentials: 'include', // Include cookies for session authentication
     });
 
     if (!response.ok) {
       throw new Error("Invalid credentials or server error");
-
     }
 
     const data = await response.json();

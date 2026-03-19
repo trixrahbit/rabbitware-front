@@ -31,7 +31,7 @@ import MDBox from "components/MDBox";
 import MDDropzoneRoot from "components/MDDropzone/MDDropzoneRoot";
 
 // Material Dashboard 2 PRO React context
-import { useMaterialUIController } from "context";
+import { useMaterialUIController } from "../../contexts/MaterialUIContext";
 
 function MDDropzone({ options }) {
   const [controller] = useMaterialUIController();

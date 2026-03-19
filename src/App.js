@@ -1,97 +1,197 @@
-import { useEffect, useMemo, useState } from "react";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import createCache from "@emotion/cache";
-import { CacheProvider } from "@emotion/react";
-import rtlPlugin from "stylis-plugin-rtl";
-import Sidenav from "examples/Sidenav";
-import Configurator from "examples/Configurator";
-import theme from "assets/theme";
-import themeDark from "assets/theme-dark";
-import { useMaterialUIController } from "context";
-import ProtectedRoute from "./ProtectedRoute";
-import { useAuth } from "context/AuthContext";
-import Basic from "./layouts/authentication/sign-in/basic";
-import Cover from "./layouts/authentication/sign-up/cover";
-import FormListPage from "./layouts/pages/formbuilder";
-import useFilteredRoutes from "./routes";
-import LoadingScreen from "components/LoadingScreen";
 
-export default function App() {
-  const [controller, dispatch] = useMaterialUIController();
-  const { authToken, authOverride, setNavigate } = useAuth();
-  const [rtlCache, setRtlCache] = useState(null);
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const routes = useFilteredRoutes();
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { useSettings } from './contexts/SettingsContext';
+import { Box, CircularProgress } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
+import { PermissionProvider } from './contexts/PermissionContext';
+import PermissionRoute from './components/PermissionRoute';
 
-  // ✅ Pass navigate function to AuthContext so it can be used inside `AuthProvider`
-  useEffect(() => {
-    if (setNavigate) {
-      setNavigate(navigate);
-    }
-  }, [navigate]);
+// Pages
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
+import Tickets from './pages/Tickets';
+import NextTicket from './pages/NextTicket';
+import Contracts from './pages/Contracts';
+import Users from './pages/Users';
+import Roles from './pages/Roles';
+import Integrations from './pages/Integrations';
+import NotFound from './pages/NotFound';
+// New pages
+import Companies from './pages/Companies';
+import UserProfile from './pages/UserProfile';
+import NextTicketSettings from './pages/NextTicketSettings';
+import Alerting from './pages/Alerting';
+import Analytics from './pages/Analytics';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import DataSources from './pages/DataSources';
+import Datasets from './pages/Datasets';
+import Subscriptions from './pages/Subscriptions';
+import Tags from './pages/Tags';
+import Gauges from './pages/Gauges';
+import GaugeDetail from './pages/GaugeDetail';
+import ChatWithAI from './pages/ChatWithAI';
+import ChatWithClaude from './pages/ChatWithClaude';
+import AiApps from './pages/AiApps';
+import Orchestration from './pages/Orchestration';
+import SelfHealing from './pages/SelfHealing';
+import SelfHealingProfiles from './pages/SelfHealingProfiles';
+import Monitoring from './pages/Monitoring';
+import CompanyMapping from './pages/CompanyMapping';
+import Calendars from './pages/Calendars';
+import AutoDispatch from './pages/AutoDispatch';
+import AutoDispatchSkills from './pages/AutoDispatchSkills';
+import AutoDispatchRules from './pages/AutoDispatchRules';
+import AutoDispatchUserSkills from './pages/AutoDispatchUserSkills';
+import AutoDispatchBusinessHours from './pages/AutoDispatchBusinessHours';
+import Devices from './pages/Devices';
+import Tenants from './pages/Tenants';
 
-  useMemo(() => {
-    setRtlCache(createCache({ key: "rtl", stylisPlugins: [rtlPlugin] }));
-  }, []);
+// Layout
+import DashboardLayout from './components/layouts/DashboardLayout';
 
-  useEffect(() => {
-    document.body.setAttribute("dir", controller.direction);
-  }, [controller.direction]);
+// Protected route component
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-  }, [pathname]);
+  // Wait for auth to load
+  if (authLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const getRoutes = (allRoutes) => {
-    if (!Array.isArray(allRoutes)) {
-      console.error("🚨 Expected an array of routes but got:", allRoutes);
-      return null;
-    }
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
 
-    return allRoutes.map((route) => {
-      if (route.collapse) {
-        return getRoutes(route.collapse);
-      }
+  return children;
+};
 
-      if (route.route) {
-        return (
-          <Route
-            key={route.key}
-            path={route.route}
-            element={
-              route.protected ? (
-                <ProtectedRoute>{route.component}</ProtectedRoute>
-              ) : (
-                route.component
-              )
-            }
-          />
-        );
-      }
-      return null;
-    });
-  };
+function App() {
+  const { currentUser, loading: authLoading } = useAuth();
+
+  // Wait for auth to load
+  if (authLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <ThemeProvider theme={controller.darkMode ? themeDark : theme}>
-      <CssBaseline />
-      {controller.layout === "dashboard" && (
-        <>
-          <Sidenav color={controller.sidenavColor} brandName="Rabbit AI" routes={routes} />
-          <Configurator />
-        </>
-      )}
-      <Routes>
-        {getRoutes(Array.isArray(routes) ? routes : [])}
-        <Route path="/login" element={<Basic />} />
-        <Route path="/authentication/sign-up/cover" element={<Cover />} />
-        <Route path="/" element={authToken || authOverride ? <FormListPage /> : <Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to={authToken || authOverride ? "/pages/crm/clients" : "/login"} replace />} />
-      </Routes>
-    </ThemeProvider>
+    <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
+      <PermissionProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={currentUser ? <Navigate to="/dashboard" /> : <Landing />} />
+          <Route path="/login" element={currentUser ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/register" element={currentUser ? <Navigate to="/dashboard" /> : <Register />} />
+          <Route path="/m365-callback" element={<Login isCallback />} />
+          <Route path="/auth/callback" element={<Login isCallback />} />
+
+          {/* Protected routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="next-ticket-settings" element={<NextTicketSettings />} />
+            <Route path="tickets" element={<Tickets />} />
+            <Route path="next-ticket" element={<NextTicket />} />
+            <Route path="companies" element={<Companies />} />
+            <Route path="contracts" element={<Contracts />} />
+            <Route path="users" element={
+              <PermissionRoute resource="users" action="view">
+                <Users />
+              </PermissionRoute>
+            } />
+            <Route path="roles" element={
+              <PermissionRoute resource="roles" action="view">
+                <Roles />
+              </PermissionRoute>
+            } />
+            <Route path="tenants" element={
+              <PermissionRoute resource="tenants" action="view">
+                <Tenants />
+              </PermissionRoute>
+            } />
+            <Route path="integrations" element={<Integrations />} />
+            <Route path="alerting" element={<Alerting />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="analytics/dashboard/:dashboardId" element={<AnalyticsDashboard />} />
+            <Route path="analytics/gauges" element={<Gauges />} />
+            <Route path="analytics/gauges/create" element={<GaugeDetail isCreating />} />
+            <Route path="analytics/gauges/:gaugeId" element={<GaugeDetail />} />
+            <Route path="datasets" element={<Datasets />} />
+            <Route path="subscriptions" element={
+              <PermissionRoute resource="subscriptions" action="view">
+                <Subscriptions />
+              </PermissionRoute>
+            } />
+            <Route path="tags" element={<Tags />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="chat-with-ai" element={<ChatWithAI />} />
+            <Route path="chat-with-claude" element={<ChatWithClaude />} />
+            <Route path="ai-apps" element={<AiApps />} />
+            <Route path="orchestration" element={
+              <PermissionRoute resource="orchestration" action="view">
+                <Orchestration />
+              </PermissionRoute>
+            } />
+            <Route path="self-healing" element={<SelfHealing />} />
+            <Route path="self-healing/profiles" element={<SelfHealingProfiles />} />
+            <Route path="monitoring" element={<Monitoring />} />
+            <Route path="devices" element={<Devices />} />
+            <Route path="companies/:companyId/devices" element={<Devices />} />
+            <Route path="company-mapping" element={<CompanyMapping />} />
+            <Route path="calendars" element={
+              <PermissionRoute resource="calendar" action="view">
+                <Calendars />
+              </PermissionRoute>
+            } />
+
+            <Route path="auto-dispatch" element={
+              <PermissionRoute resource="autodispatch" action="view">
+                <AutoDispatch />
+              </PermissionRoute>
+            } />
+            <Route path="auto-dispatch/skills" element={
+              <PermissionRoute resource="autodispatch" action="view">
+                <AutoDispatchSkills />
+              </PermissionRoute>
+            } />
+            <Route path="auto-dispatch/user-skills" element={
+              <PermissionRoute resource="autodispatch" action="view">
+                <AutoDispatchUserSkills />
+              </PermissionRoute>
+            } />
+            <Route path="auto-dispatch/rules" element={
+              <PermissionRoute resource="autodispatch" action="view">
+                <AutoDispatchRules />
+              </PermissionRoute>
+            } />
+            <Route path="auto-dispatch/business-hours" element={
+              <PermissionRoute resource="autodispatch" action="view">
+                <AutoDispatchBusinessHours />
+              </PermissionRoute>
+            } />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </PermissionProvider>
+    </SnackbarProvider>
   );
 }
+
+export default App;

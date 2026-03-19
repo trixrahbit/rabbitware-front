@@ -1,17 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 PRO React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-pro-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
 
 import { forwardRef } from "react";
 
@@ -19,10 +5,10 @@ import { forwardRef } from "react";
 import PropTypes from "prop-types";
 
 // Material Dashboard 2 PRO React components
-import MDTypography from "components/MDTypography";
+import MDTypography from "../MDTypography";
 
 // Custom styles for MDProgress
-import MDProgressRoot from "components/MDProgress/MDProgressRoot";
+import MDProgressRoot from "../MDProgress/MDProgressRoot";
 
 const MDProgress = forwardRef(({ variant, color, value, label, ...rest }, ref) => (
   <>

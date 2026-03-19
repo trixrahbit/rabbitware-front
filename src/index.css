@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.MuiDrawer-paper {
+  width: 240px;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 24px;
+  margin-left: 240px;
+}
+
+@media (max-width: 600px) {
+  .content {
+    margin-left: 0;
+  }
+}

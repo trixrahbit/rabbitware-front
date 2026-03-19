@@ -34,11 +34,12 @@ const handleSubmit = async (event) => {
   }
 
   try {
-    const response = await fetch('https://app.webitservices.com/api/register', { // ✅ Correct API route
+    const response = await fetch('/api/auth/register', { // Use relative URL for consistent endpoint access
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Include cookies for session authentication
       body: JSON.stringify({
         name,
         email,
@@ -131,4 +132,3 @@ const handleSubmit = async (event) => {
 }
 
 export default Cover;
-

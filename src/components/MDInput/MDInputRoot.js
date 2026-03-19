@@ -1,28 +1,14 @@
-/**
-=========================================================
-* Material Dashboard 2 PRO React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-pro-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
 
 // @mui material components
 import TextField from "@mui/material/TextField";
 import { styled } from "@mui/material/styles";
 
 export default styled(TextField)(({ theme, ownerState }) => {
-  const { palette, functions } = theme;
-  const { error, success, disabled } = ownerState;
+  const { palette, functions = {} } = theme || {};
+  const { error, success, disabled } = ownerState || {};
 
-  const { grey, transparent, error: colorError, success: colorSuccess } = palette;
-  const { pxToRem } = functions;
+  const { grey, transparent, error: colorError, success: colorSuccess } = palette || {};
+  const { pxToRem = (value) => `${value}px` } = functions;
 
   // styles for the input with error={true}
   const errorStyles = () => ({
@@ -34,12 +20,12 @@ export default styled(TextField)(({ theme, ownerState }) => {
 
     "& .Mui-focused": {
       "& .MuiOutlinedInput-notchedOutline, &:after": {
-        borderColor: colorError.main,
+        borderColor: colorError?.main || '#F44335',
       },
     },
 
     "& .MuiInputLabel-root.Mui-focused": {
-      color: colorError.main,
+      color: colorError?.main || '#F44335',
     },
   });
 
@@ -53,17 +39,17 @@ export default styled(TextField)(({ theme, ownerState }) => {
 
     "& .Mui-focused": {
       "& .MuiOutlinedInput-notchedOutline, &:after": {
-        borderColor: colorSuccess.main,
+        borderColor: colorSuccess?.main || '#4CAF50',
       },
     },
 
     "& .MuiInputLabel-root.Mui-focused": {
-      color: colorSuccess.main,
+      color: colorSuccess?.main || '#4CAF50',
     },
   });
 
   return {
-    backgroundColor: disabled ? `${grey[200]} !important` : transparent.main,
+    backgroundColor: disabled ? `${grey?.[200] || '#eeeeee'} !important` : transparent?.main || 'transparent',
     pointerEvents: disabled ? "none" : "auto",
     ...(error && errorStyles()),
     ...(success && successStyles()),
